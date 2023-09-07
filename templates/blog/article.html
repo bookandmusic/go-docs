@@ -1,0 +1,80 @@
+{% extends "blog/post.html" %}
+
+{% block script_article_list %}
+<script src="/static/admin/lib/sortablejs/Sortable.js"></script>
+<style>
+    /* 目录链接划过样式 */
+    #nestedDemo a:hover {
+        color: #dc3545 !important;
+    }
+
+    .toc-close {
+        display: none;
+    }
+</style>
+<script>
+    // 展开收起左边目录
+    $(function () {
+        $("body").on('click', '.switch-toc', SwitchToc)
+    });
+    function SwitchToc(i) {
+        var $me = $(this);
+        $(this).next("ul").toggleClass("toc-close"); //切换展开收起样式
+        $(this).toggleClass("bi bi-caret-left");//切换图标
+    };
+</script>
+{% endblock %}
+
+{% block side_article_list %}
+<section id="articles" class="mb-lg-4 mb-5">
+    <div class="card">
+        <div class="card-header"><i class="fas fa-list-ul mr-2"></i>文章列表</div>
+        <div class="card-body p-0"  style="height: 300px;overflow-y: auto;overflow-x: hidden;">
+            <div id="nested" class="row">
+                <ul id="nestedDemo" class="list-group col nested-sortable" style="width: 100%;-ms-flex-preferred-size: 0;
+                flex-basis: 0;
+                -ms-flex-positive: 1;
+                flex-grow: 1;
+                max-width: 100%;
+                position: relative;
+                width: 100%;
+                padding-right: 15px;
+                padding-left: 15px;">
+                    {% for value in toc_list %}
+                    <li data-sortable-id="{{value.ID}}" class="list-group-item">
+                        <a style="color: black;" href="/archives/{{value.Identify}}">{{value.Title}}
+                        </a>
+
+                        {% if value.Children %}
+                        <i class="bi bi-caret-down switch-toc"></i>
+                        <ul class="list-group nested-sortable">
+                            {% for node in value.Children %}
+                            <li data-sortable-id="{{node.ID}}" class="list-group-item">
+                                <a style="color: black;" href="/archives/{{node.Identify}}">{{node.Title}}</a>
+                                {% if node.Children %}
+                                <i class="bi bi-caret-down switch-toc"></i>
+                                <ul class="list-group nested-sortable">
+                                    {% for doc in node.Children %}
+                                    <li data-sortable-id="{{doc.ID}}" class="list-group-item">
+                                        <a style="color: black;" href="/archives/{{doc.Identify}}">{{doc.Title}}</a>
+                                        <ul class="list-group nested-sortable"></ul>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                                {% else %}
+                                <ul class="list-group nested-sortable"></ul>
+                                {% endif %}
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        {% else %}
+                        <ul class="list-group nested-sortable"></ul>
+                        {% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

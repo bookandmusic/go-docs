@@ -1,0 +1,72 @@
+{% extends "admin/public/base.html" %}
+
+{% block header_style %}
+<style>
+    .layui-form-item .layui-input-company {
+        width: auto;
+        padding-right: 10px;
+        line-height: 38px;
+    }
+</style>
+{% endblock %}
+
+
+{% block main %}
+<div class="layuimini-container">
+    <div class="layuimini-main">
+
+        <div class="layui-form layuimini-form">
+            <div class="layui-form-item">
+                <label class="layui-form-label required">管理账号</label>
+                <div class="layui-input-block">
+                    <input type="text" name="username" lay-verify="required" lay-reqtext="管理账号不能为空"
+                        placeholder="请输入管理账号" value="{{user.Username}}" class="layui-input">
+                    <tip>填写自己管理账号的名称。</tip>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label required">手机</label>
+                <div class="layui-input-block">
+                    <input type="number" name="phone" lay-verify="required" lay-reqtext="手机不能为空" placeholder="请输入手机"
+                        value="{{user.Phone}}" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">邮箱</label>
+                <div class="layui-input-block">
+                    <input type="email" name="email" placeholder="请输入邮箱" value="{{user.Email}}" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item layui-form-text">
+                <label class="layui-form-label">备注信息</label>
+                <div class="layui-input-block">
+                    <textarea name="description" class="layui-textarea" placeholder="请输入备注信息" value=""
+                        {{user.Description}}></textarea>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <button class="layui-btn layui-btn-normal" lay-submit lay-filter="saveBtn">确认保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block footer_script %}
+<script>
+    // 将 CSRF Token 注入到 JavaScript 变量 csrfToken 中
+    var csrfToken = "{{ csrfToken }}";
+
+    function handler(index, r) {
+        var miniTab = layui.miniTab,
+            layer = layui.layer;
+        layer.close(index);
+        miniTab.deleteCurrentByIframe();
+    }
+    layui.use(['form', 'miniTab'], function () {
+        formSubmit("saveBtn", "user-setting", csrfToken, handler)
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends "blog/base.html" %}
+
+{% block header_script %}
+<script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"
+    integrity="sha256-yt2kYMy0w8AbtF89WXb2P1rfjcP/HTHLT7097U8Y5b8=" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="/static/blog/css/journals.css">
+<script type="text/javascript" src="/static/blog/js/journals.js"></script>
+{% endblock %}
+
+
+{% block main %}
+<div class="container-fluid" style="background: #f8fafc;">
+    <div class="container px-md-2 px-0">
+        <div class="row">
+            <div id="left" class="journals col-md-8 p-0 pr-md-2" style="opacity: 0;">
+                {% for journal in journals %}
+                <div class="journal-item bg-white my-2 px-3 py-3">
+                    <div class="journal-header d-flex py-3">
+                        <div>
+                            <i class="user-avatar d-block rounded-circle"
+                                style="background-image: url('{{ person_info.AuthorAvatar }}');"></i>
+                        </div>
+                        <div class="d-flex flex-column justify-content-center ml-3">
+                            <span class="font-weight-bold">{{ person_info.AuthorName }}</span>
+                            <small class="text-muted"> {{journal.CreatedAt.Format("2006年01月02日")}}
+                            </small>
+                        </div>
+                    </div>
+                    <div class="journal-content text-muted pb-3 border-bottom px-2">
+                        {{journal.HtmlContent|safe}}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <div id="right" class="col-md-4 bg-white pt-3 pb-5 text-muted mt-2 d-md-block d-none">
+                <div class="mt-2">
+                    <div class="mt-4 mb-4point5 w-100 d-flex justify-content-center">
+                        <div class="w-50 text-right mr-3">
+                            <i style="display: inline-block;
+                width: 6.5rem; height: 6.5rem;
+                background-image: url('{{ person_info.AuthorAvatar }}');
+                background-size: cover;" class="rounded-circle"></i>
+                        </div>
+                        <div class="w-50 text-left ml-3 d-flex flex-column justify-content-center">
+                            <span class="h4 d-block">{{ person_info.AuthorName }}</span>
+                            <span class="text-muted text-truncate">
+                                <i class="fas fa-map-marker-alt mr-1"></i>
+                                {{ person_info.AuthorAddress }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="mt-4 mb-4point5 w-100 d-flex justify-content-center">
+                        <span>踮起脚尖 看得更远</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,59 @@
+{% extends "blog/post.html" %}
+
+{% block header_script %}
+<link rel="stylesheet" href="/static/blog/css/photos.css">
+<script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"
+    integrity="sha256-yt2kYMy0w8AbtF89WXb2P1rfjcP/HTHLT7097U8Y5b8=" crossorigin="anonymous"></script>
+{% endblock %}
+
+
+{% block main %}
+{% if collections|length == 0 %}
+
+<div class="bg-white mt-5 mb-4">
+    <div class="d-flex flex-column align-items-center pt-5">
+        <span class="text-muted"><i class="fas fa-inbox fa-7x"></i></span>
+        <span class="text-muted mt-4 mb-5">
+            还没有写过文章
+        </span>
+    </div>
+</div>
+
+{% else %}
+<div id="pictures">
+   
+    {% for collection in collections %}
+    <div class="picture-item my-2 bg-white rounded-bottom">
+        <a href="/archives/{{ collection.FirstDoc }}">
+            <div class="picture-details">
+                <img class="picture rounded-top"
+                    src="{{collection.Cover}}"
+                    alt="{{collection.Name}}" loading="lazy"
+                    >
+            </div>
+        </a>
+        <div class="p-3 picture-bottom">
+            <b class="picture-title">{{collection.Name}}</b>
+            <div class="picture-info mt-2 text-muted">
+                <span>{{collection.CreatedAt.Format("2006年01月02日")}}</span>
+                <span></span>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+
+</div>
+<div class="container-fluid" style="background: #f8fafc;">
+    <div class="container">
+        <div id="pictureContainer" class="row"></div>
+    </div>
+</div>
+
+{% endif %}
+
+{% endblock %}
+
+{% block footer_script %}
+<script src="/static/blog/js/photos.js"></script>
+{% endblock %}

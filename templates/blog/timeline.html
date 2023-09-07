@@ -1,0 +1,105 @@
+{% extends "blog/base.html" %}
+
+{% block header_script %}
+<link rel="stylesheet" href="/static/blog/css/time-line.css">
+{% endblock %}
+
+
+{% block left %}
+<div class="pr-lg-5 mt-lg-2 mt-3">
+    {% for title, articles in title_articles %}
+    <div class="title-list-item">
+        <div class="d-flex mb-3">
+            <i class="user-avatar rounded-circle" style="display: block;
+                   width: 2.5rem; height: 2.5rem;
+                   background-image: url('{{ person_info.AuthorAvatar }}');
+                   background-size: cover;"></i>
+            <div class="dialogue-box rounded">
+                <h3 id="{{ title }}" class="section-title">
+                    <span>{{ title }}</span>
+                </h3>
+            </div>
+        </div>
+        <ul class="title-list">
+            {% for article in articles %}
+            <li class="d-flex flex-sm-row flex-column justify-content-between pr-3">
+                <a href="/archives/{{ article.Identify }}">{{ article.Title }}</a>
+                <small class="text-muted">{{ article.CreatedAt.Format("2006年01月02日") }}</small>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block right %}
+<section id="profile" class="mt-4 bg-white d-xl-block d-none">
+    <div class="card">
+        <div class="card-header"><i class="fas fa-user mr-2"></i>个人信息</div>
+        <div class="card-body d-flex flex-column align-items-center">
+            <div class="mt-4 mb-4point5 w-100 d-flex justify-content-center">
+                <div class="w-50 text-right mr-3">
+                    <i style="display: inline-block;
+        width: 6.5rem; height: 6.5rem;
+        background-image: url('{{ person_info.AuthorAvatar }}');
+        background-size: cover;" class="rounded-circle"></i>
+                </div>
+                <div class="w-50 text-left ml-3 d-flex flex-column justify-content-center">
+                    <span class="h4 d-block">{{ person_info.AuthorName }}</span>
+                    <span class="text-muted text-truncate">
+                        <i class="fas fa-map-marker-alt mr-1"></i>
+                        {{ person_info.AuthorAddress }}
+                    </span>
+                </div>
+            </div>
+
+            <div class="w-100 border-top"></div>
+
+            <div class="mt-4 w-100 d-flex justify-content-around">
+                <div class="w-100 text-center">
+                    <small class="text-muted">文章数量</small>
+                    <span class="d-block h2 mt-2">
+                        {{ person_info.ArticleCount }}
+                    </span>
+                </div>
+                <div class="w-100 text-center">
+                    <small class="text-muted">分类数量</small>
+                    <span class="d-block h2 mt-2">
+                        {{ person_info.CategoryCount }}
+                    </span>
+                </div>
+                <div class="w-100 text-center">
+                    <small class="text-muted">标签数量</small>
+                    <span class="d-block h2 mt-2">
+                        {{ person_info.TagCount }}
+                    </span>
+                </div>
+                <div class="w-100 text-center">
+                    <small class="text-muted">文集数量</small>
+                    <span class="d-block h2 mt-2">
+                        {{ person_info.CollectionCount }}
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="mb-4 mt-n2">
+        </div>
+
+    </div>
+</section>
+<section id="navigation">
+    <div class="card mt-lg-4 mt-5">
+        <div class="card-header">
+            <i class="fas fa-location-arrow mr-2"></i>
+            {{page_title}}导航
+        </div>
+        <ul id="navigationList" class="list-group list-group-flush">
+        </ul>
+    </div>
+</section>
+{% endblock %}
+
+{% block footer_script %}
+<script type="text/javascript" src="/static/blog/js/navigation.js"></script>
+{% endblock %}

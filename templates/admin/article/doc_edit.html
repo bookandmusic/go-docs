@@ -1,0 +1,203 @@
+{% extends "admin/public/base.html" %}
+
+{% block header_script %}
+<link rel="stylesheet" href="/static/admin/css/easymde.min.css" />
+<script src="/static/admin/js/xm-select.js" charset="utf-8"></script>
+{% endblock %}
+
+{% block main %}
+<div class="layui-form layuimini-form">
+    <div class="layui-form-item">
+        <label class="layui-form-label required">标题</label>
+        <div class="layui-input-block">
+            <input type="text" name="title" lay-verify="required" lay-reqtext="名称不能为空" placeholder="请输入名称"
+                value="{{article.Title}}" class="layui-input">
+            <tip>填写文档名称</tip>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label required">文集</label>
+        <div id="collection" class="layui-input-inline layui-form" style="width: 450px;"></div>
+        <button id="add-collection" class="layui-btn layui-btn-normal open-window">添加</button>
+    </div>
+
+    <div class="layui-form-item" hidden>
+        <label class="layui-form-label required">类型</label>
+        <div class="layui-input-block layui-form">
+            <input type="radio" name="type" value="1" title="文档" checked>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">标签</label>
+        <div id="tags" class="layui-input-inline layui-form" style="width: 450px;"></div>
+        <button id="add-tag" class="layui-btn layui-btn-normal open-window">添加</button>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">类别</label>
+        <div id="category" class="layui-input-inline layui-form" style="width: 450px;"></div>
+        <button id="add-category" class="layui-btn layui-btn-normal open-window">添加</button>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label required">内容</label>
+        <div class="layui-input-block layui-form">
+            <textarea id="detail" name="content" lay-verify="required" lay-reqtext="内容不能为空" placeholder="请输入内容"
+                value=""></textarea>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <button class="layui-btn layui-btn-normal" lay-submit lay-filter="saveBtn">确认保存</button>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block footer_script %}
+<script>
+    function refreshData(key) {
+        switch (key) {
+            case "category":
+                updateSelectData("/admin/api/category", "name", "ID", category);
+                break;
+            case "collection":
+                updateSelectData("/admin/api/collection", "name", "ID", collection);
+                break;
+            case "tag":
+                updateSelectData("/admin/api/tag", "name", "ID", tags);
+                break;
+        }
+    }
+
+    var tagsInitValue = JSON.parse("{{tagIDs}}");
+    var tags = xmSelect.render({
+        el: '#tags',
+        filterable: true,
+        model: {
+            label: {
+                type: 'block',
+                block: {
+                    //最大显示数量, 0:不限制
+                    showCount: 4,
+                    //是否显示删除图标
+                    showIcon: true,
+                }
+            }
+        },
+        name: "tagIds",
+        autoRow: true,
+        data: [],
+        initValue: tagsInitValue,
+    })
+
+    var categoryInitValue = JSON.parse("[{{article.CategoryID}}]");
+    var category = xmSelect.render({
+        el: '#category',
+        radio: true,
+        name: "categoryId",
+        filterable: true,
+        toolbar: { show: true },
+        data: [],
+        initValue: categoryInitValue,
+    })
+
+    var collectionInitValue = JSON.parse("[{{article.CollectionID}}]");
+    var collection = xmSelect.render({
+        el: '#collection',
+        radio: true,
+        name: "collectionId",
+        filterable: true,
+        toolbar: { show: true },
+        data: [],
+        initValue: collectionInitValue,
+    })
+    var csrfToken = "{{ csrfToken }}";
+    var articleId = "{{article.ID}}";
+
+    updateSelectData("/admin/api/category", "name", "ID", category);
+    updateSelectData("/admin/api/collection", "name", "ID", collection);
+    updateSelectData("/admin/api/tag", "name", "ID", tags);
+
+    layui.config({
+        base: "/static/admin/js/lay-module/",
+    }).extend({
+        easymde: 'easymde/easymde',
+    }).use(['form', 'layer', 'easymde'], function () {
+        var $ = layui.$;
+        // 设置全局的请求头信息
+        $.ajaxSetup({
+            headers: {
+                'Authenticity-Token': csrfToken,
+            }
+        });
+
+        const easymde = layui.easymde;
+        const mde = easymde.init({
+            element: document.getElementById("detail"), //文本域ID
+            autosave: {
+                enabled: true, //开启自动保存
+                uniqueId: csrfToken, //唯一ID值，通过唯一ID值进行保存编写记录
+                delay: 1000, //多少毫秒保存一次
+            },
+            promptURLs: true, // 如果设置为true，则会显示一个JS警报窗口，要求提供链接或图像URL。默认为false。
+            renderingConfig: {
+                codeSyntaxHighlighting: true, //开启代码高亮
+            },
+            placeholder: "|",
+            //status: ["autosave", "lines", "words","cursor"], //设置为false 则禁用状态栏 默认为true 开启所有
+            toolbar: [
+                //展示所有工具栏,如果不指定有默认的选项。
+                "bold", //黑体
+                "italic", //斜体
+                "strikethrough", //删除线
+                "heading", //标题
+                "heading-smaller", //缩小标题
+                "heading-bigger", // 增大标题
+                "heading-1", //小标题
+                "heading-2", //中标题
+                "heading-3", //大标题
+                "|", //分割线
+                "code", // 代码块
+                "quote", //引用
+                "unordered-list", // 无序列表
+                "ordered-list", // 有序列表
+                "clean-block", // 清除块样式
+                "|", //分割线
+                "link", //添加超链接
+                "image", //添加图片
+                "table", //添加表格
+                "horizontal-rule", // 水平线
+                "|",
+                "preview", //全屏预览
+                "side-by-side", //分屏预览
+                "fullscreen", //全屏
+                "|", //分割线
+                "undo", //清空
+                "redo", // 重做
+                "guide", // 说明
+            ],
+            upload: {
+                url: "/admin/upload/img",
+            },
+        });
+        easymde.value("{{articleContent|safe}}");
+
+        // 给每个按钮绑定点击事件
+        layui.$("#add-tag").click(function () {
+            openNewWindow("/admin/tag/edit/", "添加标签")
+        })
+        layui.$("#add-category").click(function () {
+            openNewWindow("/admin/category/edit/", "添加分类")
+        })
+        layui.$("#add-collection").click(function () {
+            openNewWindow("/admin/collection/edit/", "添加文集")
+        })
+        formSubmit("saveBtn", `/admin/article/edit/?id=${articleId}`, csrfToken, changeHandler, "{{articleTypeStr}}")
+    });
+</script>
+{% endblock %}

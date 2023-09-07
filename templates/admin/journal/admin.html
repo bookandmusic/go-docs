@@ -1,0 +1,85 @@
+{% extends "admin/public/base.html" %}
+
+{% block main %}
+<div class="layuimini-container">
+    <div class="layuimini-main">
+        <script type="text/html" id="toolbarDemo">
+            <div class="layui-btn-container">
+                <button class="layui-btn layui-btn-normal layui-btn-sm data-add-btn" lay-event="add"> 添加 </button>
+                <button class="layui-btn layui-btn-sm layui-btn-danger data-delete-btn" lay-event="delete"> 删除 </button>
+            </div>
+        </script>
+
+        <table class="layui-hide" id="currentTableId" lay-filter="currentTableFilter"></table>
+
+        <script type="text/html" id="currentTableBar">
+            <a class="layui-btn layui-btn-normal layui-btn-xs data-count-edit" lay-event="edit">编辑</a>
+            <a class="layui-btn layui-btn-xs layui-btn-danger data-count-delete" lay-event="delete">删除</a>
+        </script>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block footer_script %}
+
+<script>
+    var csrfToken = "{{ csrfToken }}";
+
+    function refreshData(type) {
+        refreshTable("currentTableId")
+    }
+
+    layui.use(['form', 'table'], function () {
+        var $ = layui.jquery,
+            form = layui.form,
+            table = layui.table;
+
+        table.render({
+            elem: '#currentTableId',
+            toolbar: '#toolbarDemo',
+            defaultToolbar: ['filter', 'exports', 'print', {
+                title: '提示',
+                layEvent: 'LAYTABLE_TIPS',
+                icon: 'layui-icon-tips'
+            }],
+            url: "/admin/api/journal",
+            cols: [[
+                { type: "checkbox", width: 50 },
+                { field: 'id', width: 80, title: 'ID', sort: true },
+                { field: 'created_at', width: 250, title: '日期' },
+                { title: '操作', minWidth: 150, toolbar: '#currentTableBar', align: "center" }
+            ]],
+            limits: [10, 20, 50, 100],
+            limit: 15,
+            page: true,
+            skin: 'line'
+        });
+
+        /**
+         * toolbar监听事件
+         */
+        table.on('toolbar(currentTableFilter)', function (obj) {
+            if (obj.event === 'add') {
+                openNewWindow('/admin/journal/edit/', '添加日志');
+            } else if (obj.event === 'delete') {  // 监听删除操作
+                var checkStatus = table.checkStatus('currentTableId')
+                    , data = checkStatus.data;
+                jsonSubmit("/admin/journal/delete/", csrfToken, data, deleteHandler);
+            }
+        });
+
+        table.on('tool(currentTableFilter)', function (obj) {
+            var data = obj.data;
+            if (obj.event === 'edit') {
+                openNewWindow(`/admin/journal/edit/?id=${obj.data.id}`, '编辑日志');
+                return false;
+            } else if (obj.event === 'delete') {
+                jsonSubmit("/admin/journal/delete/", csrfToken, [obj.data], deleteHandler);
+            }
+        });
+
+    });
+</script>
+
+{% endblock %}

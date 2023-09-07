@@ -1,0 +1,90 @@
+{% extends "admin/public/base.html" %}
+
+{% block header_script %}
+<link rel="stylesheet" href="/static/admin/css/ImgCropping.css" media="all">
+<link rel="stylesheet" href="/static/admin/css/cropper.min.css" media="all">
+<style>
+    #uplod-item {
+        width: 100px;
+        height: 125px;
+        margin: 20px 150px;
+        padding: 0;
+        border: 1px solid black;
+    }
+</style>
+{% endblock %}
+{% block main %}
+<div class="layui-form layuimini-form">
+    <div class="layui-form-item">
+        <label class="layui-form-label required">文集名</label>
+        <div class="layui-input-block">
+            <input type="text" name="name" lay-verify="required" lay-reqtext="名称不能为空" placeholder="请输入名称"
+                value="{{collection.Name}}" class="layui-input">
+            <tip>填写文集名称</tip>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label required">作者</label>
+        <div class="layui-input-block">
+            <input type="text" name="author" lay-verify="required" lay-reqtext="名称不能为空" placeholder="请输入名称"
+                value="{{collection.Author}}" class="layui-input">
+            <tip>填写作者名称</tip>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <input type="hidden" name="cover" value="{{collection.Cover}}" id="cover">
+        <label class="layui-form-label">封面</label>
+        <button type="button" class="layui-btn" id="uploadAvatar">
+            <i class="layui-icon layui-icon-upload"></i>更换图片
+        </button>
+        <div id="uplod-item" {% if collection.Cover == "" %} style="display: none;" {% endif %}>
+            <img class="layui-upload-img" id="ID-upload-demo-img" {% if collection.Cover != "" %}
+                src="{{collection.Cover}}" {% endif %} style="width: 100%;height: 100%;padding: 0;">
+            <div id="ID-upload-demo-text"></div>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <button class="layui-btn layui-btn-normal" lay-submit lay-filter="saveBtn">确认保存</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block footer_script %}
+<script>
+    var csrfToken = "{{ csrfToken }}";
+    var collectionId = "{{collection.ID}}"
+
+    layui.use(['form'], function () {
+
+        formSubmit("saveBtn", `/admin/collection/edit/?id=${collectionId}`, csrfToken, changeHandler, "collection");
+
+    });
+
+    function uploadHandler(response) {
+        var $ = layui.$;
+        $('#ID-upload-demo-img').attr('src', response.url);
+        $('#uplod-item').css('display', 'block');
+        $("#cover").val(response.url)
+    }
+
+    layui.config({
+        base: '/static/admin/js/lay-module/cropper/'
+    }).use('avatar', function () {
+        var avatar = layui.avatar,
+            $ = layui.$;
+        avatar.render({
+            imageWidth: 4,
+            imageHeight: 5,
+            success: function (base64Data, size) {
+                var blob = avatar.base64ToBlob(base64Data)
+                var formData = new FormData();
+                formData.append("file", blob, "image.png"); // 为文件指定文件名
+                uploadImg("/admin/upload/img", formData, csrfToken, uploadHandler);
+            }
+        });
+    });
+
+</script>
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends "admin/public/base.html" %}
+
+{% block main %}
+<div class="layui-form layuimini-form">
+    <div class="layui-form-item">
+        <label class="layui-form-label required">分类名</label>
+        <div class="layui-input-block">
+            <input type="text" name="name" lay-verify="required" lay-reqtext="名称不能为空" placeholder="请输入名称"
+                value="{{category.Name}}" class="layui-input">
+            <tip>填写分类名称</tip>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <button class="layui-btn layui-btn-normal" lay-submit lay-filter="saveBtn">确认保存</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block footer_script %}
+<script>
+    var csrfToken = "{{ csrfToken }}";
+    var categoryId = "{{ category.ID}}"
+    layui.use(['form'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            $ = layui.$;
+        formSubmit("saveBtn", `/admin/category/edit/?id=${categoryId}`, csrfToken, changeHandler, "category");
+    });
+</script>
+{% endblock %}

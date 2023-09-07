@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,
+          initial-scale=1,
+          minimum-scale=1.0,
+          maximum-scale=1.0,
+          user-scalable=no,
+          shrink-to-fit=no">
+    <meta name="keywords" content="{{ site_info.Keywords }}" />
+    <meta name="description" content="{{site_info.Name}}" />
+    <meta name="site" content="{{ site_info.Url }}" />
+    <link rel="shortcut icon" type="images/x-icon" href="{{ site_info.Icon }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.12.1/css/all.min.css" crossorigin="anonymous">
+    <link rel="stylesheet" href="/static/blog/css/style.css"> 
+
+    <!-- 公共BootStrap支持使用的JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/js/bootstrap.min.js" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="/static/blog/js/index.js"></script>
+    <script type="text/javascript" src="/static/blog/js/navbar.js"></script>
+
+
+    <style>
+        /* 定义滚动条滑块颜色 */
+        ::-webkit-scrollbar-thumb {
+            background-color: #007bff !important;
+        }
+
+        /* 全局a标签的颜色 */
+        a {
+            color: #007bff;
+            text-decoration: none !important;
+        }
+
+        /* 全局a标签划过的样式 */
+        a:hover {
+            color: #dc3545;
+            text-decoration: none !important;
+        }
+
+        /* 面包屑里面的链接划过的样式 */
+        .breadcrumb a:hover {
+            color: #dc3545 !important;
+            text-decoration: none !important;
+        }
+
+        /* 页面footer的链接划过样式 */
+        footer .link-info a:hover {
+            color: #dc3545 !important;
+        }
+    </style>
+    <title>{{ page_title }} | {{ site_info.Name }}</title>
+    {% block header_script %}
+
+    {% endblock %}
+</head>
+
+<body>
+    {% block body %}
+
+    {% block navbar %}
+    <section id="navBar" class="border-bottom bg-white">
+        <nav class="navbar navbar-expand-lg navbar-light container px-lg-2 py-3">
+
+            <a class="navbar-brand font-weight-bold" href="/">
+                <img src="{{ site_info.Logo }}" width="30" height="30" class="d-inline-block align-top mr-2"
+                    alt="{{ site_info.Name }}">
+                {{ site_info.Name }}
+            </a>
+
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+                aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse pl-1" id="navbarSupportedContent">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/" target="_self">
+                            <span class="d-lg-none d-inline mr-2"><i class="fas fa-home"></i></span>
+                            首页
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/archives" target="_self">
+                            <span class="d-lg-none d-inline mr-2"><i class="fas fa-archive"></i></span>
+                            归档
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link" href="/categories" target="_self">
+                            <span class="d-lg-none d-inline mr-2"><i class="fas fa-list"></i></span>
+                            分类
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/collections" target="_self">
+                            <span class="d-lg-none d-inline mr-2"><i class="fas fa-book"></i></span>
+                            文集
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/journals" target="_self">
+                            <span class="d-lg-none d-inline mr-2"><i class="fas fa-smile-wink"></i></span>
+                            日志
+                        </a>
+                    </li>
+                </ul>
+                <form id="search" class="form-inline my-2 my-lg-0" method="get" action="/search">
+                    <input class="form-control mr-sm-2" name="keyword" type="search" value="" placeholder="请输入关键字"
+                        aria-label="请输入关键字" required autocomplete="off" data-toggle="tooltip" data-placement="bottom"
+                        title="输入查询关键字">
+                    <button class="btn btn-outline-secondary my-2 my-sm-0" type="submit">查询</button>
+                </form>
+            </div>
+        </nav>
+    </section>
+    {% endblock %}
+
+    {% block read_progress %}
+    {% endblock %}
+
+    {% block main %}
+    <div class="container px-lg-2 pb-3 bg-white">
+        {% block breadcrumb %}
+
+        {% endblock %}
+
+        <div class="row mb-3">
+            <div id="left" class="col-xl-8 pr-xl-5 pt-xl-3 pt-0">
+                {% block left %}
+
+                {% endblock %}
+            </div>
+            <div id="right" class="col-xl-4 pt-3">
+                {% block right %}
+
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+    {% endblock %}
+
+    {% block catalog_button %}
+    {% endblock %}
+
+    {% endblock %}
+
+    <footer class="py-4 border-top bg-white">
+        <div class="container d-flex flex-md-row flex-column justify-content-between align-items-center px-lg-2">
+            <div>
+                <span class="text-muted"> <b>{{ site_info.Name }} {{ site_info.Since}}</b>
+
+                    <span class="mx-2 d-none d-sm-inline-block">
+                        <a href="https://beian.miit.gov.cn/" target="_blank">{{ beian }}</a>
+                    </span>
+
+                    <script type="text/javascript">
+                        console.log(
+                            `%c{{ site_info.Name }}\n%c`,
+                            `font-size: 2rem; color: #ff0000;`,
+                            `font-size: .75rem;`,
+                            `background: #333; color: #ffffff; font-size: .75rem;`,
+                            `font-size: .75rem;`
+                        );
+                    </script>
+
+                </span>
+            </div>
+            <div class="link-info mt-md-0 mt-4">
+                <a class="text-dark mr-3" target="_blank" href="/atom.xml">
+                    <i class="fas fa-rss"></i>
+                </a>
+                <a class="text-dark mr-3" target="_blank" href="https://github.com/{{ person_info.Github }}">
+                    <i class="fab fa-github"></i>
+                </a>
+                <a class="text-dark mr-3" target="_blank" href="https://weibo.com/{{ person_info.Weibo }}">
+                    <i class="fab fa-weibo"></i>
+                </a>
+                <a class="text-dark" href="mailto:{{ person_info.Email }}">
+                    <i class="fas fa-envelope"></i>
+                </a>
+            </div>
+        </div>
+    </footer>
+    <div id="backTop" class="back-top">
+        <span><i class="fas fa-caret-up"></i></span>
+    </div>
+    {% block footer_script %}
+    {% endblock %}
+</body>
+
+</html>

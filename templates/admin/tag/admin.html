@@ -1,0 +1,112 @@
+{% extends "admin/public/base.html" %}
+
+{% block main %}
+<div class="layuimini-container">
+    <div class="layuimini-main">
+
+        <fieldset class="table-search-fieldset">
+            <legend>搜索信息</legend>
+            <div style="margin: 10px 10px 10px 10px">
+                <form class="layui-form layui-form-pane" action="">
+                    <div class="layui-form-item">
+                        <div class="layui-inline">
+                            <label class="layui-form-label">标签名</label>
+                            <div class="layui-input-inline">
+                                <input type="text" name="keyword" autocomplete="off" class="layui-input">
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <button type="submit" class="layui-btn layui-btn-primary" lay-submit
+                                lay-filter="data-search-btn"><i class="layui-icon"></i> 搜 索</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </fieldset>
+
+        <script type="text/html" id="toolbarDemo">
+            <div class="layui-btn-container">
+                <button class="layui-btn layui-btn-normal layui-btn-sm data-add-btn" lay-event="add"> 添加 </button>
+                <button class="layui-btn layui-btn-sm layui-btn-danger data-delete-btn" lay-event="delete"> 删除 </button>
+            </div>
+        </script>
+
+        <table class="layui-hide" id="currentTableId" lay-filter="currentTableFilter"></table>
+
+        <script type="text/html" id="currentTableBar">
+            <a class="layui-btn layui-btn-normal layui-btn-xs data-count-edit" lay-event="edit">编辑</a>
+            <a class="layui-btn layui-btn-xs layui-btn-danger data-count-delete" lay-event="delete">删除</a>
+        </script>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block footer_script %}
+
+<script>
+    var csrfToken = "{{ csrfToken }}";
+
+    function refreshData(type) {
+        refreshTable("currentTableId")
+    }
+
+    layui.use(['form', 'table'], function () {
+        var $ = layui.jquery,
+            form = layui.form,
+            table = layui.table;
+
+        table.render({
+            elem: '#currentTableId',
+            toolbar: '#toolbarDemo',
+            defaultToolbar: ['filter', 'exports', 'print', {
+                title: '提示',
+                layEvent: 'LAYTABLE_TIPS',
+                icon: 'layui-icon-tips'
+            }],
+            url: "/admin/api/tag",
+            cols: [[
+                { type: "checkbox", width: 50 },
+                { field: 'ID', width: 80, title: 'ID', sort: true },
+                { field: 'name', width: 135, title: '标签名' },
+                { field: 'num', width: 135, title: '文章数量', sort: true },
+                { title: '操作', minWidth: 150, toolbar: '#currentTableBar', align: "center" }
+            ]],
+            limits: [10, 20, 50, 100],
+            limit: 15,
+            page: true,
+            skin: 'line'
+        });
+
+        // 监听搜索操作
+        form.on('submit(data-search-btn)', function (data) {
+            refreshTable("currentTableId",  {"keyword": data.field.keyword});
+            return false;
+        });
+        /**
+         * toolbar监听事件
+         */
+        table.on('toolbar(currentTableFilter)', function (obj) {
+            if (obj.event === 'add') {
+                openNewWindow('/admin/tag/edit/', '添加标签');
+            } else if (obj.event === 'delete') {  // 监听删除操作
+                var checkStatus = table.checkStatus('currentTableId')
+                    , data = checkStatus.data;
+                jsonSubmit("/admin/tag/delete/", csrfToken, data, deleteHandler);
+            }
+        });
+
+        table.on('tool(currentTableFilter)', function (obj) {
+            var data = obj.data;
+            if (obj.event === 'edit') {
+                openNewWindow(`/admin/tag/edit/?id=${obj.data.ID}`, '编辑标签');
+                return false;
+            } else if (obj.event === 'delete') {
+                jsonSubmit("/admin/tag/delete/", csrfToken, [obj.data], deleteHandler);
+            }
+        });
+
+    });
+</script>
+
+{% endblock %}
