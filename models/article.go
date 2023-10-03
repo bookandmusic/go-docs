@@ -617,8 +617,12 @@ func (a *Article) ImportMds(zipPath string, articleType ArticleTyle, collectionI
 	io.WriteString(w, zipPath) // 将str写入到w中
 	io.WriteString(w, time.Now().String())
 	md5str := fmt.Sprintf("%x", w.Sum(nil)) // w.Sum(nil)将w的hash转成[]byte格式
+	SiteName := NewSetting().GetValue("site_name")
+	if SiteName == "" {
+		SiteName = "GDocs"
+	}
 
-	tempPath := filepath.Join(os.TempDir(), global.GVA_CONFIG.Server.ServerName, md5str)
+	tempPath := filepath.Join(os.TempDir(), SiteName, md5str)
 	docMap := make(map[string]int, 0)
 
 	if err := os.MkdirAll(tempPath, 0o766); err != nil {

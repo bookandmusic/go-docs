@@ -45,7 +45,7 @@ func main() {
 	}
 
 	app := &cli.App{
-		Name:  global.GVA_CONFIG.Server.ServerName,
+		Name:  "GDocs",
 		Usage: "Documentation Service",
 		Commands: []*cli.Command{
 			{

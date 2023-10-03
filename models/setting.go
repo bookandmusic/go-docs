@@ -41,6 +41,10 @@ func (s *Setting) Update(updates map[string]interface{}) error {
 	return tx.Commit().Error
 }
 
+func (s *Setting) DeleteByName(name string) error {
+	return global.GVA_DB.Where("name = ?", name).Unscoped().Delete(&Setting{}).Error
+}
+
 // 定义一个方法，接收value和name，当name存在时，更新value，否则就创建
 func (s *Setting) UpdateOrCreate(name string, value string) error {
 	if setting, _ := s.FindByName(name); setting == nil {

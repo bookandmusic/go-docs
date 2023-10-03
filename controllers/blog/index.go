@@ -42,6 +42,7 @@ func (controller *BlogController) Index(c *gin.Context) {
 		}
 		site_info := common.GenerateSiteInfo()
 		person_info := common.GeneratePersonInfo()
+		article_info := common.GenerateArticleInfo()
 
 		if categoryStr != "" && tagStr == "" {
 			category, err = models.NewCategory().FindByIdentify(categoryStr)
@@ -84,6 +85,7 @@ func (controller *BlogController) Index(c *gin.Context) {
 		c.HTML(http.StatusOK, "blog/index.html", pongo2.Context{
 			"site_info":    site_info,
 			"page_title":   title,
+			"article_info": article_info,
 			"person_info":  person_info,
 			"tags":         tags,
 			"articles":     articles,
@@ -157,6 +159,7 @@ func (controller *BlogController) Archives(c *gin.Context) {
 	if c.Request.Method == "GET" {
 		site_info := common.GenerateSiteInfo()
 		person_info := common.GeneratePersonInfo()
+		article_info := common.GenerateArticleInfo()
 		title := "归档"
 
 		articles, _ := models.NewArticle().FindBlogItems()
@@ -172,6 +175,7 @@ func (controller *BlogController) Archives(c *gin.Context) {
 			"site_info":      site_info,
 			"page_title":     title,
 			"person_info":    person_info,
+			"article_info":   article_info,
 			"title_articles": title_articles,
 		})
 	}
@@ -181,6 +185,7 @@ func (controller *BlogController) Categories(c *gin.Context) {
 	if c.Request.Method == "GET" {
 		site_info := common.GenerateSiteInfo()
 		person_info := common.GeneratePersonInfo()
+		article_info := common.GenerateArticleInfo()
 		title := "分类"
 
 		categories, _ := models.NewCategory().FindAll()
@@ -207,6 +212,7 @@ func (controller *BlogController) Categories(c *gin.Context) {
 		c.HTML(http.StatusOK, "blog/timeline.html", pongo2.Context{
 			"site_info":      site_info,
 			"page_title":     title,
+			"article_info":   article_info,
 			"person_info":    person_info,
 			"title_articles": title_articles,
 		})

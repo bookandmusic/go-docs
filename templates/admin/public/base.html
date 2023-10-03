@@ -18,6 +18,7 @@
     <link rel="stylesheet" href="/static/admin/css/public.css" media="all">
 
     <script src="/static/admin/lib/layui-v2.6.3/layui.js" charset="utf-8"></script>
+    <script src="/static/admin/js/lay-config.js?v=1.0.4" charset="utf-8"></script>
 
     {% block header_script %}{% endblock %}
     {% block header_style %} {% endblock %}
@@ -97,21 +98,21 @@
         function jsonSubmit(url, csrfToken, data, successFunc) {
             var layer = layui.layer,
                 $ = layui.jquery;
-
             var index = layer.alert("确认是否提交？？？", function () {
                 $.ajax({
                     url: url,
                     method: 'POST',
-                    beforeSend: function (xhr) {
-                        // 在请求头中添加 CSRF Token
-                        xhr.setRequestHeader('Authenticity-Token', csrfToken);
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authenticity-Token': csrfToken,
                     },
                     data: JSON.stringify(data),
                     success: function (r) {
                         successFunc(index, r)
                     },
-                    error: function (jqXHR) {
-                        var errorMessage = jqXHR.responseJSON ? jqXHR.responseJSON.msg : "删除标签失败";
+                    error: function (xhr) {
+                        var responseJSON = $.parseJSON(xhr.responseText);
+                        var errorMessage = responseJSON ? responseJSON.msg : "请求提交失败";
                         console.error("Error:", errorMessage); // 输出详细错误信息到控制台
                         layer.msg(errorMessage);
                     }

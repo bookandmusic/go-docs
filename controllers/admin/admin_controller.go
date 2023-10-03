@@ -1,11 +1,15 @@
 package admin
 
 import (
+	"fmt"
 	"net/http"
+	"reflect"
 
 	pongo2 "github.com/flosch/pongo2/v6"
 	"github.com/gin-gonic/gin"
+	"github.com/gorilla/csrf"
 
+	"github.com/bookandmusic/docs/common"
 	"github.com/bookandmusic/docs/global"
 	"github.com/bookandmusic/docs/models"
 )
@@ -34,17 +38,12 @@ type MenuItemData struct {
 // 定义一个结构体来表示菜单数据
 
 func (u *AdminController) Index(c *gin.Context) {
-	SiteIcon := models.NewSetting().GetValue("site_icon")
-
-	if SiteIcon == "" {
-		SiteIcon = "/static/public/images/favicon.ico"
-	}
-
+	site_info := common.GenerateSiteInfo()
 	c.HTML(http.StatusOK, "admin/index.html", pongo2.Context{
-		"serverName":  global.GVA_CONFIG.Server.ServerName,
-		"keywords":    global.GVA_CONFIG.Server.KeyWord,
-		"description": global.GVA_CONFIG.Server.Description,
-		"site_icon":   SiteIcon,
+		"serverName":  site_info.Name,
+		"keywords":    site_info.Keywords,
+		"description": site_info.Desc,
+		"site_icon":   site_info.Icon,
 	})
 }
 
@@ -67,12 +66,7 @@ func (u *AdminController) Welcome(c *gin.Context) {
 }
 
 func (u *AdminController) AdminCenterMenu(c *gin.Context) {
-	SiteLogo := models.NewSetting().GetValue("site_logo")
-
-	if SiteLogo == "" {
-		SiteLogo = "/static/public/images/logo.png"
-	}
-
+	site_info := common.GenerateSiteInfo()
 	// 创建 MenuData 结构体实例，表示菜单数据
 	menu := MenuItemData{
 		HomeInfo: MenuItem{
@@ -80,8 +74,8 @@ func (u *AdminController) AdminCenterMenu(c *gin.Context) {
 			Href:  "welcome/",
 		},
 		LogoInfo: MenuItem{
-			Title: global.GVA_CONFIG.Server.ServerName,
-			Image: SiteLogo,
+			Title: site_info.Name,
+			Image: site_info.Logo,
 			Href:  "",
 		},
 		MenuInfo: []MenuItem{
@@ -141,6 +135,12 @@ func (u *AdminController) AdminCenterMenu(c *gin.Context) {
 						Icon:   "fa fa-hand-o-right",
 						Target: "_self",
 					},
+					{
+						Title:  "系统设置",
+						Href:   "system/settings/",
+						Icon:   "fa fa-cog",
+						Target: "_self",
+					},
 				},
 			},
 		},
@@ -148,4 +148,60 @@ func (u *AdminController) AdminCenterMenu(c *gin.Context) {
 
 	// 将菜单数据转换为 JSON 格式并返回给客户端
 	c.JSON(http.StatusOK, menu)
+}
+
+func (u *AdminController) SystemSetting(c *gin.Context) {
+	if c.Request.Method == "GET" {
+		c.HTML(http.StatusOK, "admin/system/settings.html", pongo2.Context{
+			"csrfToken":   csrf.Token(c.Request),
+			"site_info":   common.GenerateSiteInfo(),
+			"person_info": common.GeneratePersonInfo(),
+		})
+	} else {
+		resource := c.Query("resource")
+		var (
+			objType  reflect.Type
+			objValue reflect.Value
+		)
+		if resource == "site_info" {
+			obj := common.SiteInfo{}
+			if err := c.BindJSON(&obj); err != nil {
+				global.GVA_LOG.Warn(fmt.Sprintf("parse params err: %v", err))
+				c.JSON(http.StatusBadRequest, gin.H{"status": false, "msg": "站点信息有误"})
+				return
+			}
+			// 使用反射获取结构体的类型和值
+			objType = reflect.TypeOf(obj)
+			objValue = reflect.ValueOf(obj)
+		} else {
+			obj := common.PersonInfo{}
+			if err := c.BindJSON(&obj); err != nil {
+				global.GVA_LOG.Warn(fmt.Sprintf("parse params err: %v", err))
+				c.JSON(http.StatusBadRequest, gin.H{"status": false, "msg": "个人信息有误"})
+				return
+			}
+			// 使用反射获取结构体的类型和值
+			objType = reflect.TypeOf(obj)
+			objValue = reflect.ValueOf(obj)
+		}
+
+		// 遍历结构体字段
+		for i := 0; i < objType.NumField(); i++ {
+			field := objType.Field(i)
+			fieldValue := objValue.Field(i).Interface()
+
+			// 获取 JSON 标签或字段名作为键
+			key := field.Tag.Get("json")
+			val := fmt.Sprintf("%v", fieldValue)
+			if key != "" && val != "" {
+				if err := models.NewSetting().UpdateOrCreate(key, val); err != nil {
+					global.GVA_LOG.Error(fmt.Sprintf("update system setting '%s':'%s', err: %v", key, val, err))
+				}
+			} else if key != "" && val == "" {
+				if err := models.NewSetting().DeleteByName(key); err != nil {
+					global.GVA_LOG.Error(fmt.Sprintf("update system setting '%s' default val, err: %v", key, err))
+				}
+			}
+		}
+	}
 }

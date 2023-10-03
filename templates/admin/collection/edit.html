@@ -4,7 +4,7 @@
 <link rel="stylesheet" href="/static/admin/css/ImgCropping.css" media="all">
 <link rel="stylesheet" href="/static/admin/css/cropper.min.css" media="all">
 <style>
-    #uplod-item {
+    #uplod-cover-item {
         width: 100px;
         height: 125px;
         margin: 20px 150px;
@@ -32,13 +32,16 @@
         </div>
     </div>
     <div class="layui-form-item">
-        <input type="hidden" name="cover" value="{{collection.Cover}}" id="cover">
+        <input type="hidden" name="cover" value="{{collection.Cover}}" id="Cover">
         <label class="layui-form-label">封面</label>
-        <button type="button" class="layui-btn" id="uploadAvatar">
-            <i class="layui-icon layui-icon-upload"></i>更换图片
+        <button type="button" class="layui-btn" id="uploadCover">
+            <i class="layui-icon layui-icon-upload"></i>更换封面
         </button>
-        <div id="uplod-item" {% if collection.Cover == "" %} style="display: none;" {% endif %}>
-            <img class="layui-upload-img" id="ID-upload-demo-img" {% if collection.Cover != "" %}
+        <button type="button" class="layui-btn" id="removeCover">
+            <i class="layui-icon layui-icon-upload"></i>移除封面
+        </button>
+        <div id="uplod-cover-item" {% if collection.Cover=="" %} style="display: none;" {% endif %}>
+            <img class="layui-upload-img" id="ID-upload-cover-img" {% if collection.Cover !="" %}
                 src="{{collection.Cover}}" {% endif %} style="width: 100%;height: 100%;padding: 0;">
             <div id="ID-upload-demo-text"></div>
         </div>
@@ -64,17 +67,26 @@
 
     function uploadHandler(response) {
         var $ = layui.$;
-        $('#ID-upload-demo-img').attr('src', response.url);
-        $('#uplod-item').css('display', 'block');
-        $("#cover").val(response.url)
+        $('#ID-upload-cover-img').attr('src', response.url);
+        $('#uplod-cover-item').css('display', 'block');
+        $("#Cover").val(response.url)
     }
 
     layui.config({
-        base: '/static/admin/js/lay-module/cropper/'
+        base: "/static/admin/js/lay-module/",
+    }).extend({
+        avatar: 'avatar/avatar',
     }).use('avatar', function () {
         var avatar = layui.avatar,
             $ = layui.$;
+
+        $('#removeCover').on('click', function () {
+            $('#Cover').attr('value', '');
+            $('#uplod-cover-item').css('display', 'none');
+        });
+        
         avatar.render({
+            elem: "#uploadCover",
             imageWidth: 4,
             imageHeight: 5,
             success: function (base64Data, size) {

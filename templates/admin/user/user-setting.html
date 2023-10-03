@@ -59,14 +59,13 @@
     // 将 CSRF Token 注入到 JavaScript 变量 csrfToken 中
     var csrfToken = "{{ csrfToken }}";
 
-    function handler(index, r) {
-        var miniTab = layui.miniTab,
-            layer = layui.layer;
-        layer.close(index);
-        miniTab.deleteCurrentByIframe();
-    }
     layui.use(['form', 'miniTab'], function () {
-        formSubmit("saveBtn", "user-setting", csrfToken, handler)
+        formSubmit("saveBtn", "user-setting", csrfToken, function (index, r) {
+            var miniTab = layui.miniTab,
+                layer = layui.layer;
+            layer.close(index);
+            miniTab.deleteCurrentByIframe();
+        })
     });
 </script>
 {% endblock %}

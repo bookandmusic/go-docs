@@ -1,0 +1,311 @@
+{% extends "admin/public/base.html" %}
+
+{% block header_script %}
+<link rel="stylesheet" href="/static/admin/css/ImgCropping.css" media="all">
+<link rel="stylesheet" href="/static/admin/css/cropper.min.css" media="all">
+<style>
+    .upload-div-item {
+        width: 80px;
+        height: 80px;
+        margin: 10px 150px;
+        padding: 0;
+        border: 1px solid black;
+    }
+</style>
+{% endblock %}
+
+{% block main %}
+
+<div class="layui-row layui-col-space10">
+    <div class="layui-panel">
+        <div class="layui-tab layui-tab-brief" lay-filter="test-hash">
+            <ul class="layui-tab-title">
+                <li class="layui-this" lay-id="blog">站点信息</li>
+                <li lay-id="doc">个人信息</li>
+            </ul>
+            <div class="layui-tab-content">
+                <div class="layui-tab-item layui-show">
+                    <div class="layui-form layuimini-form" lay-filter="siteinfo-settings">
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">站点名称</label>
+                            <div class="layui-input-block">
+                                <input type="text" name="site_name" value="{{ site_info.Name }}" placeholder="请输入站点名称"
+                                    autocomplete="off" class="layui-input">
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">站点网址</label>
+                            <div class="layui-input-block">
+                                <input type="text" name="site_url" value="{{ site_info.Url }}" placeholder="请输入站点网址"
+                                    autocomplete="off" class="layui-input">
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">站点描述</label>
+                            <div class="layui-input-block">
+                                <input type="text" name="site_description" value="{{ site_info.Desc }}"
+                                    placeholder="请输入站点描述" autocomplete="off" class="layui-input">
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">关键词</label>
+                            <div class="layui-input-block">
+                                <input type="text" name="site_keyword" value="{{ site_info.Keywords }}"
+                                    placeholder="请输入站点关键词" autocomplete="off" class="layui-input">
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">Since</label>
+                            <div class="layui-input-block">
+                                <input type="text" name="since_year" value="{{ site_info.Since }}" placeholder="请输入建站年份"
+                                    autocomplete="off" class="layui-input">
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">备案信息</label>
+                            <div class="layui-input-block">
+                                <input type="text" name="site_beian" value="{{ site_info.Beian }}" placeholder="请输入备案信息"
+                                    autocomplete="off" class="layui-input">
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <input type="hidden" name="site_icon" value="{{site_info.Icon}}" id="Icon">
+                            <label class="layui-form-label">Icon</label>
+                            <button type="button" class="layui-btn" id="uploadIcon">
+                                <i class="layui-icon layui-icon-upload"></i>更换Icon
+                            </button>
+                            <button type="button" class="layui-btn" id="removeIcon">
+                                <i class="layui-icon layui-icon-upload"></i>移除Icon
+                            </button>
+                            <div class="upload-div-item" id="uplod-icon-item" {% if site_info.Icon=="" %}
+                                style="display: none;" {% endif %}>
+                                <img class="layui-upload-img" id="ID-upload-icon-img" {% if site_info.Icon !="" %}
+                                    src="{{ site_info.Icon }}" {% endif %} style="width: 100%;height: 100%;padding: 0;">
+                                <div id="ID-upload-icon-text"></div>
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <input type="hidden" name="site_logo" value="{{site_info.Logo}}" id="Logo">
+                            <label class="layui-form-label">Logo</label>
+                            <button type="button" class="layui-btn" id="uploadLogo">
+                                <i class="layui-icon layui-icon-upload"></i>更换Logo
+                            </button>
+                            <button type="button" class="layui-btn" id="removeLogo">
+                                <i class="layui-icon layui-icon-upload"></i>移除Logo
+                            </button>
+                            <div class="upload-div-item" id="uplod-logo-item" {% if site_info.Logo=="" %}
+                                style="display: none;" {% endif %}>
+                                <img class="layui-upload-img" id="ID-upload-logo-img" {% if site_info.Logo !="" %}
+                                    src="{{ site_info.Logo }}" {% endif %} style="width: 100%;height: 100%;padding: 0;">
+                                <div id="ID-upload-logo-text"></div>
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <div class="layui-input-block">
+                                <button class="layui-btn layui-btn-normal" lay-submit
+                                    lay-filter="saveSiteInfo">确认保存</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-tab-item">
+                    <div class="layui-form layuimini-form" lay-filter="personinfo-settings">
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">作者名称</label>
+                            <div class="layui-input-block">
+                                <input type="text" name="author_name" value="{{ person_info.AuthorName }}" placeholder="请输入作者名称"
+                                    autocomplete="off" class="layui-input">
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <input type="hidden" name="author_avatar" value="{{person_info.AuthorAvatar}}" id="Avatar">
+                            <label class="layui-form-label">头像</label>
+                            <button type="button" class="layui-btn" id="uploadAvatar">
+                                <i class="layui-icon layui-icon-upload"></i>更换Avatar
+                            </button>
+                            <button type="button" class="layui-btn" id="removeAvatar">
+                                <i class="layui-icon layui-icon-upload"></i>移除Avatar
+                            </button>
+                            <div class="upload-div-item" id="uplod-avatar-item" {% if person_info.AuthorAvatar == "" %}
+                                style="display: none;" {% endif %}>
+                                <img class="layui-upload-img" id="ID-upload-avatar-img" {% if person_info.AuthorAvatar !="" %}
+                                    src="{{ person_info.AuthorAvatar }}" {% endif %} style="width: 100%;height: 100%;padding: 0;">
+                                <div id="ID-upload-icon-text"></div>
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">所在地址</label>
+                            <div class="layui-input-block">
+                                <input type="text" name="author_address" value="{{ person_info.AuthorAddress }}" placeholder="请输入所在地址"
+                                    autocomplete="off" class="layui-input">
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">Email</label>
+                            <div class="layui-input-block">
+                                <input type="text" name="email" value="{{ person_info.Email }}"
+                                    placeholder="请输入Email" autocomplete="off" class="layui-input">
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">Github</label>
+                            <div class="layui-input-block">
+                                <input type="text" name="github" value="{{ person_info.Github }}"
+                                    placeholder="请输入Github" autocomplete="off" class="layui-input">
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">微信</label>
+                            <div class="layui-input-block">
+                                <input type="text" name="wechat" value="{{ person_info.Wechat }}" placeholder="请输入微信"
+                                    autocomplete="off" class="layui-input">
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">QQ</label>
+                            <div class="layui-input-block">
+                                <input type="text" name="qq" value="{{ person_info.QQ }}" placeholder="请输入QQ"
+                                    autocomplete="off" class="layui-input">
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">微博</label>
+                            <div class="layui-input-block">
+                                <input type="text" name="weibo" value="{{ person_info.Weibo }}" placeholder="请输入微博"
+                                    autocomplete="off" class="layui-input">
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <div class="layui-input-block">
+                                <button class="layui-btn layui-btn-normal" lay-submit
+                                    lay-filter="savePersonInfo">确认保存</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block footer_script %}
+<script>
+    var csrfToken = "{{ csrfToken }}";
+    function uploadIconHandler(response) {
+        var $ = layui.$;
+        $('#ID-upload-icon-img').attr('src', response.url);
+        $('#uplod-icon-item').css('display', 'block');
+        $("#Icon").val(response.url)
+    }
+    function uploadLogoHandler(response) {
+        var $ = layui.$;
+        $('#ID-upload-logo-img').attr('src', response.url);
+        $('#uplod-logo-item').css('display', 'block');
+        $("#Logo").val(response.url)
+    }
+
+    layui.config({
+        base: "/static/admin/js/lay-module/",
+    }).extend({
+        avatar: 'avatar/avatar',
+    }).use('avatar', function () {
+        var avatar = layui.avatar,
+            $ = layui.$;
+        $('#removeIcon').on('click', function () {
+            $('#Icon').attr('value', '');
+            $('#uplod-icon-item').css('display', 'none');
+        });
+        $('#removeLogo').on('click', function () {
+            $('#Logo').attr('value', '');
+            $('#uplod-logo-item').css('display', 'none');
+        });
+        $('#removeAvatar').on('click', function () {
+            $('#Avatar').attr('value', '');
+            $('#uplod-avatar-item').css('display', 'none');
+        });
+        avatar.render({
+            elem: "#uploadIcon",
+            chooseImgName: "chooseIcon",
+            tailoringImgName: "tailoringIcon",
+            sureCutName: "sureCutIcon",
+            tailoringContainerName: "tailoring-icon-container",
+            tailoringContentName: "tailoring-icon-content",
+            previewImg: "previewIcon",
+            imageWidth: 1,
+            imageHeight: 1,
+            success: function (base64Data, size) {
+                var blob = avatar.base64ToBlob(base64Data)
+                var formData = new FormData();
+                formData.append("file", blob, "image.png"); // 为文件指定文件名
+                uploadImg("/admin/upload/img", formData, csrfToken, uploadIconHandler);
+            }
+        });
+        avatar.render({
+            elem: "#uploadLogo",
+            chooseImgName: "chooseLogo",
+            tailoringImgName: "tailoringLogo",
+            sureCutName: "sureCutLogo",
+            tailoringContainerName: "tailoring-logo-container",
+            tailoringContentName: "tailoring-logo-content",
+            previewImg: "previewLogo",
+            imageWidth: 1,
+            imageHeight: 1,
+            success: function (base64Data, size) {
+                var blob = avatar.base64ToBlob(base64Data)
+                var formData = new FormData();
+                formData.append("file", blob, "image.png"); // 为文件指定文件名
+                uploadImg("/admin/upload/img", formData, csrfToken, uploadLogoHandler);
+            }
+        });
+        avatar.render({
+            elem: "#uploadAvatar",
+            chooseImgName: "chooseAvatar",
+            tailoringImgName: "tailoringAvatar",
+            sureCutName: "sureCutAvatar",
+            tailoringContainerName: "tailoring-avatar-container",
+            tailoringContentName: "tailoring-avatar-content",
+            previewImg: "previewAvatar",
+            imageWidth: 1,
+            imageHeight: 1,
+            success: function (base64Data, size) {
+                var blob = avatar.base64ToBlob(base64Data)
+                var formData = new FormData();
+                formData.append("file", blob, "image.png"); // 为文件指定文件名
+                uploadImg("/admin/upload/img", formData, csrfToken, uploadIconHandler);
+            }
+        });
+    });
+
+    layui.use(['form', 'miniTab'], function () {
+        var form = layui.form,miniTab = layui.miniTab;
+
+        form.on(`submit(saveSiteInfo)`, function (data) {
+            jsonSubmit(
+                `/admin/system/settings/?resource=site_info`,
+                csrfToken,
+                data.field,
+                function (index, r) {
+                    var layer = layui.layer;
+                    layer.close(index);
+                    miniTab.deleteCurrentByIframe();
+                });
+            return false;
+        });
+        form.on(`submit(savePersonInfo)`, function (data) {
+            jsonSubmit(
+                `/admin/system/settings/?resource=person_info`,
+                csrfToken,
+                data.field,
+                function (index, r) {
+                    var layer = layui.layer;
+                    layer.close(index);
+                    miniTab.deleteCurrentByIframe();
+                });
+            return false;
+        })
+    });
+</script>
+{% endblock %}

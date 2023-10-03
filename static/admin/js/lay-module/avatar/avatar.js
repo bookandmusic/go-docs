@@ -10,7 +10,11 @@
  * 封装方法：找到UMD文件，去掉头尾，改为layer.define
  */
 
-layui.define(["cropper", "jquery"], function (exports) {
+layui.config({
+    base: "/static/admin/js/lay-module/",
+}).extend({
+    cropper: 'cropper/cropper',
+}).define(["cropper", "jquery"], function (exports) {
     'use strict';
     var $ = layui.jquery,
         MOD_NAME = "avatar";
@@ -58,43 +62,48 @@ layui.define(["cropper", "jquery"], function (exports) {
         }
         var uploadElem = options.elem || "#uploadAvatar",
             imgWidth = options.imgWidth || 300,
-            success = options.success;
-
+            success = options.success,
+            chooseImgName = options.chooseImgName || "chooseImg",
+            tailoringImgName = options.tailoringImgName || "tailoringImg",
+            sureCutName = options.sureCutName || "sureCut",
+            tailoringContainerName = options.tailoringContainerName || "tailoringContainer",
+            tailoringContentName = options.tailoringContentName || "tailoringContent",
+            previewImgName = options.previewImg || "displayImg";
         //在body末尾追加弹框代码
         $('body').append([
             '<!--图片裁剪框 start-->',
-            '<div style="display: none" class="tailoring-container">',
-            '    <div class="tailoring-content">',
+            `<div style="display: none" class="tailoring-container ${tailoringContainerName}">`,
+            `    <div class="tailoring-content ${tailoringContentName}">`,
             '        <div class="tailoring-content-one">',
-            '            <label title="上传图片" for="chooseImg" class="l-btn choose-btn">',
-            '                <input type="file" accept="image/jpg,image/jpeg,image/png" name="file" id="chooseImg" class="hidden">选择图片',
+            `            <label title="上传图片" for="${chooseImgName}" class="l-btn choose-btn">`,
+            `                <input type="file" accept="image/jpg,image/jpeg,image/png" name="file" id="${chooseImgName}" class="hidden">选择图片`,
             '            </label>',
             '            <div class="close-tailoring">×</div>',
             '        </div>',
             '        <div class="tailoring-content-two">',
             '            <div class="tailoring-box-parcel">',
-            '                <img id="tailoringImg">',
+            `                <img id="${tailoringImgName}">`,
             '            </div>',
             '            <div class="preview-box-parcel">',
             '                <p>图片预览：</p>',
-            '                <div class="square previewImg"></div>',
-            '                <div class="circular previewImg"></div>',
+            `                <div class="square previewImg ${previewImgName}"></div>`,
+            `                <div class="circular previewImg ${previewImgName}"></div>`,
             '            </div>',
             '        </div>',
             '        <div class="tailoring-content-three">',
             '            <button class="l-btn cropper-reset-btn">复位</button>',
             '            <button class="l-btn cropper-rotate-btn">旋转</button>',
             '            <button class="l-btn cropper-scaleX-btn">换向</button>',
-            '            <button class="l-btn sureCut" id="sureCut">确定剪裁并上传图片</button>',
+            `            <button class="l-btn sureCut" id="${sureCutName}">确定剪裁并上传图片</button>`,
             '        </div>',
             '    </div>',
             '</div>',
             '<!--图片裁剪框 end-->',
         ].join(""));
 
-        var tailoringContent = $(".tailoring-content"),
-            tailoringContainer = $(".tailoring-container"),
-            tailoringImg = $('#tailoringImg');
+        var tailoringContent = $("." + tailoringContentName),
+            tailoringContainer = $("." + tailoringContainerName),
+            tailoringImg = $("#" + tailoringImgName);
 
         //弹出框水平垂直居中
         (window.onresize = function () {
@@ -124,7 +133,7 @@ layui.define(["cropper", "jquery"], function (exports) {
         });
 
         //选择图片
-        $('#chooseImg').change(function () {
+        $("#" + chooseImgName).change(function () {
             var file = this;
             if (!file.files || !file.files[0]) {
                 return;
@@ -143,7 +152,7 @@ layui.define(["cropper", "jquery"], function (exports) {
         var imageHeight = options.imageHeight || 1
         tailoringImg.cropper({
             aspectRatio: imageWidth / imageHeight, //默认比例
-            preview: '.previewImg', //预览视图
+            preview: '.' + previewImgName, //预览视图
             guides: false, //裁剪框的虚线(九宫格)
             autoCropArea: 0.5, //0-1之间的数值，定义自动剪裁区域的大小，默认0.8
             movable: false, //是否允许移动图片
@@ -180,7 +189,7 @@ layui.define(["cropper", "jquery"], function (exports) {
         });
 
         //裁剪后的处理
-        $("#sureCut").on("click", function () {
+        $("#" + sureCutName).on("click", function () {
             if (tailoringImg.attr("src") == null) {
                 return false;
             } else {

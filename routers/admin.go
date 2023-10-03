@@ -20,6 +20,8 @@ func InitAdminRoutes(router *gin.Engine) {
 	{
 		adminRouter.GET("/", adminController.Index)
 		adminRouter.GET("/welcome", adminController.Welcome)
+		adminRouter.GET("/system/settings", adminController.SystemSetting)
+		adminRouter.POST("/system/settings", adminController.SystemSetting)
 
 		adminRouter.POST("/login", userController.Login)
 		adminRouter.GET("/login", userController.Login)

@@ -176,8 +176,6 @@
 
         // 监听搜索操作
         form.on('submit(blog-search-btn)', function (data) {
-            console.log(111)
-            console.log(data.field)
             refreshTable("blogTableId", { "keyword": data.field.keyword, "type": data.field.type, "categoryId": data.field.categoryId });
             return false;
         });

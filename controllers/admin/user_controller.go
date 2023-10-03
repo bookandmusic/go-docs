@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/csrf"
 
+	"github.com/bookandmusic/docs/common"
 	"github.com/bookandmusic/docs/global"
 	"github.com/bookandmusic/docs/models"
 )
@@ -23,9 +24,10 @@ var users []models.User
 func (u *UserController) Login(c *gin.Context) {
 	if c.Request.Method == "GET" {
 		// 处理 GET 请求，返回登录页面
+		site_info := common.GenerateSiteInfo()
 		c.HTML(http.StatusOK, "admin/login.html", pongo2.Context{
 			"msg":            "",
-			"serverName":     global.GVA_CONFIG.Server.ServerName,
+			"serverName":     site_info.Name,
 			csrf.TemplateTag: csrf.TemplateField(c.Request),
 		})
 	} else if c.Request.Method == "POST" {
