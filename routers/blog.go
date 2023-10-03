@@ -12,6 +12,7 @@ func InitBlogRoutes(router *gin.Engine) {
 	blogRouter := router.Group("/")
 	{
 		blogRouter.GET("/", blogController.Index)
+		blogRouter.GET("/search", blogController.Search)
 		blogRouter.GET("/page/:page", blogController.Index)
 		blogRouter.GET("/tags/:tag", blogController.Index)
 		blogRouter.GET("/categories/:category", blogController.Index)

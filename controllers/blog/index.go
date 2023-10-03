@@ -240,3 +240,36 @@ func (controller *BlogController) Journals(c *gin.Context) {
 		})
 	}
 }
+
+func (controller *BlogController) Search(c *gin.Context) {
+
+	keyword := c.Query("keyword")
+	page, err := strconv.Atoi(c.Query("page"))
+	if err != nil || page < 1 {
+		page = 1
+	}
+
+	var results []*models.Article
+
+	if keyword != "" {
+		results = models.NewArticle().Search(keyword, page, 10)
+	}
+
+	site_info := common.GenerateSiteInfo()
+	person_info := common.GeneratePersonInfo()
+	article_info := common.GenerateArticleInfo()
+	tags, _ := models.NewTag().FindAll()
+
+	title := "搜索"
+
+	c.HTML(http.StatusOK, "blog/search.html", pongo2.Context{
+		"site_info":    site_info,
+		"page_title":   title,
+		"article_info": article_info,
+		"person_info":  person_info,
+		"tags":         tags,
+		"articles":     results,
+		"current_page": page,
+		"keyword":      keyword,
+	})
+}

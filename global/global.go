@@ -1,6 +1,7 @@
 package global
 
 import (
+	"github.com/huichen/wukong/engine"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	minify "github.com/tdewolff/minify/v2"
@@ -15,4 +16,5 @@ var (
 	GVA_VP     *viper.Viper
 	GVA_LOG    *logrus.Logger
 	GVA_MINIFY *minify.M
+	GVA_INDEX  *engine.Engine
 )

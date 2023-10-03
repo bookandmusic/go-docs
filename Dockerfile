@@ -32,6 +32,8 @@ COPY --from=builder /app/godocs .
 # 复制静态文件和模板
 COPY --from=builder /app/static ./static
 COPY --from=builder /app/templates ./templates
+# 复制索引字典数据
+COPY --from=builder /app/index ./index
 # 复制配置文件
 COPY --from=builder /app/config/config.ini ./config/config.ini
 

@@ -10,6 +10,7 @@ import (
 	"github.com/bookandmusic/docs/commands"
 	"github.com/bookandmusic/docs/core"
 	"github.com/bookandmusic/docs/global"
+	"github.com/bookandmusic/docs/models"
 )
 
 var (
@@ -31,6 +32,7 @@ func main() {
 	// 初始化数据库连接
 	global.GVA_DB = core.InitDatabase()
 	global.GVA_MINIFY = core.InitMinify()
+	global.GVA_INDEX = core.InitSearchEngine()
 
 	if fileLogger, ok := global.GVA_LOG.Out.(*lumberjack.Logger); ok {
 		// 在程序结束时关闭日志文件
@@ -42,6 +44,10 @@ func main() {
 		// 程序结束前关闭数据库链接
 		db, _ := global.GVA_DB.DB()
 		defer db.Close()
+	}
+
+	if global.GVA_INDEX != nil && global.GVA_DB != nil {
+		models.NewArticle().InitArticleIndex()
 	}
 
 	app := &cli.App{

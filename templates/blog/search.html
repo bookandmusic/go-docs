@@ -1,0 +1,206 @@
+{% extends "blog/base.html" %}
+
+{% block header_script %}
+<link rel="stylesheet" href="/static/blog/css/index.css">
+<style>
+    /* 列表项中a标签划过样式 */
+    .list-item a:hover {
+        color: #dc3545 !important;
+    }
+
+    /* 搜索高亮颜色 */
+    .search-highlight {
+        color: #007bff !important;
+    }
+
+    /* 搜索高亮划过色 */
+    a:hover .search-highlight {
+        color: #dc3545 !important;
+    }
+
+    /* 添加 CSS 样式以设置高亮文本的颜色 */
+    mark {
+        background-color: yellow;
+        color: black;
+    }
+</style>
+{% endblock %}
+
+{% block left %}
+
+<div class="list-item border-bottom pt-3">
+    {% if articles|length == 0 %}
+    <div class="alert alert-danger mt-4" role="alert">
+        <i class="far fa-tired mr-2"></i>
+        没有查询到"{{keyword}}"的结果
+    </div>
+    <div class="d-flex flex-column align-items-center mt-5 pt-5">
+        <span class="text-muted"><i class="fas fa-inbox fa-7x"></i></span>
+        <span class="text-muted mt-4 mb-5">
+            啥都没有找到，到<a class="font-weight-bold" href="/">主页</a>看看吧
+        </span>
+    </div>
+
+    {% else %}
+    {% for article in articles %}
+    <div class="d-flex align-items-center justify-content-between">
+
+        <div class="item-left d-flex flex-column" style="justify-content: space-evenly;">
+
+            <a href="/archives/{{ article.Identify }}" class="text-body">
+                <h4 class="p-0 m-0 font-weight-bold text-break">
+                    {{ article.Title|safe}}
+                </h4>
+            </a>
+            <div class="d-flex align-items-center">
+                <div class="post-summary text-muted text-break">
+                    {{ article.HtmlContent | safe }}
+                </div>
+            </div>
+
+            <small>
+                {% if article.Tags|length != 0 %}
+                <span class="mr-3 font-weight-bold d-md-inline d-none">
+                    <i class="fas fa-tags mr-1"></i>
+                    {% for tag in article.Tags %}
+                    <a class="text-body mr-1" href="/tags/{{ tag.Identify }}">{{ tag.Name }}</a>
+                    {% endfor %}
+                </span>
+                {% endif %}
+
+
+                {% if article.Category.Name != "" %}
+                <span class="mr-3 font-weight-bold d-md-inline d-none">
+                    <i class="fas fa-list mr-2"></i>
+                    <a class="text-body mr-1" href="/categories/{{ article.Category.Identify }}">
+                        {{article.Category.Name }}
+                    </a>
+                </span>
+                {% endif %}
+                <span class="mr-3">
+                    <i class="fas fa-calendar-alt mr-2"></i>{{ article.CreatedAt.Format("2006年01月02日") }}
+                </span>
+            </small>
+        </div>
+    </div>
+    {% endfor %}
+
+    {% endif %}
+
+</div>
+<section id="pagination" class="mt-5 mb-lg-3 d-flex justify-content-center">
+    <nav aria-label="切换上下页">
+        <ul class="pagination">
+            {% if current_page > 1 %}
+            <li class="page-item ">
+                <a class="page-link"
+                    href="{% if current_page-1 ==1 %} /search?keyword={{keyword}} {% else %} /search?keyword={{keyword}}&page={{current_page -1 }} {% endif %}"
+                    aria-label="上一页">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <a class="page-link" tabindex="-1" aria-disabled="true">&laquo;</a>
+            </li>
+            {% endif %}
+
+            <li class="page-item active">
+                <a class="page-link" href="javascript:void(0)">
+                    {{current_page}}
+                    <span class="sr-only">(current)</span>
+                </a>
+            </li>
+
+            {% if articles|length >= 10 %}
+            <li class="page-item ">
+                <a class="page-link" href="/search?keyword={{keyword}}&page={{current_page+1}}" aria-label="下一页">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <a class="page-link" href="javascript:void(0)" tabindex="-1" aria-disabled="true">&raquo;</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+</section>
+
+{% endblock %}
+
+{% block right %}
+<section id="profile" class="mt-4 bg-white d-xl-block d-none">
+    <div class="card">
+        <div class="card-header"><i class="fas fa-user mr-2"></i>个人信息</div>
+        <div class="card-body d-flex flex-column align-items-center">
+            <div class="mt-4 mb-4point5 w-100 d-flex justify-content-center">
+                <div class="w-50 text-right mr-3">
+                    <i style="display: inline-block;
+        width: 6.5rem; height: 6.5rem;
+        background-image: url('{{ person_info.AuthorAvatar }}');
+        background-size: cover;" class="rounded-circle"></i>
+                </div>
+                <div class="w-50 text-left ml-3 d-flex flex-column justify-content-center">
+                    <span class="h4 d-block">{{ person_info.AuthorName }}</span>
+                    <span class="text-muted text-truncate">
+                        <i class="fas fa-map-marker-alt mr-1"></i>
+                        {{ person_info.AuthorAddress }}
+                    </span>
+                </div>
+            </div>
+
+            <div class="w-100 border-top"></div>
+
+            <div class="mt-4 w-100 d-flex justify-content-around">
+                <div class="w-100 text-center">
+                    <small class="text-muted">文章数量</small>
+                    <span class="d-block h2 mt-2">
+                        {{ article_info.ArticleCount }}
+                    </span>
+                </div>
+                <div class="w-100 text-center">
+                    <small class="text-muted">分类数量</small>
+                    <span class="d-block h2 mt-2">
+                        {{ article_info.CategoryCount }}
+                    </span>
+                </div>
+                <div class="w-100 text-center">
+                    <small class="text-muted">标签数量</small>
+                    <span class="d-block h2 mt-2">
+                        {{ article_info.TagCount }}
+                    </span>
+                </div>
+                <div class="w-100 text-center">
+                    <small class="text-muted">文集数量</small>
+                    <span class="d-block h2 mt-2">
+                        {{ article_info.CollectionCount }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="mb-4 mt-n2">
+        </div>
+
+    </div>
+</section>
+<section id="tags" class="mt-4 mb-5 bg-white">
+    <div class="card">
+        <div class="card-header">
+            <i class="fas fa-tags mr-2"></i>
+            所有标签
+        </div>
+        <div class="card-body">
+            {% for tag in tags %}
+            <div class="tag">
+                <a href="/tags/{{ tag.Identify }}" class="text-muted">
+                    <span class="tag-left">{{ tag.Name }}</span>
+                    <span class="tag-right">{{ tag.Num }}</span>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

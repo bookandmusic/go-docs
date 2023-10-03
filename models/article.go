@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/huichen/wukong/types"
 	yaml "gopkg.in/yaml.v2"
 	"gorm.io/gorm"
 
@@ -138,8 +139,17 @@ func (a *Article) Create(article *Article) error {
 		article.Identify = utils.GenerateMD5Hash(time.Now().Format("20060102150405") + article.Title)
 	}
 	if err := tx.Create(article).Error; err != nil {
+		tx.Rollback()
 		return err
 	}
+	global.GVA_INDEX.IndexDocument(uint64(article.ID), types.DocumentIndexData{
+		Content: article.Content,
+		Fields: map[string]string{
+			"Identify":  article.Identify,
+			"CreatedAt": article.CreatedAt.Format("2006年01月02日"),
+		},
+		Labels: []string{article.Title},
+	}, true)
 	return tx.Commit().Error
 }
 
@@ -246,7 +256,15 @@ func (a *Article) Update(updates map[string]interface{}) error {
 		tx.Rollback()
 		return err
 	}
-
+	global.GVA_INDEX.RemoveDocument(uint64(a.ID), true)
+	global.GVA_INDEX.IndexDocument(uint64(a.ID), types.DocumentIndexData{
+		Content: updates["Content"].(string),
+		Fields: map[string]string{
+			"Identify":  a.Identify,
+			"CreatedAt": a.CreatedAt.Format("2006年01月02日"),
+		},
+		Labels: []string{updates["Title"].(string)},
+	}, true)
 	return tx.Commit().Error
 }
 
@@ -285,8 +303,82 @@ func (a *Article) DeleteByArticleIds(articleIds []int) error {
 			}
 		}
 		tx.Model(article).Where("id = ?", articleId).Unscoped().Delete(&Article{})
+		global.GVA_INDEX.RemoveDocument(uint64(articleId), true)
 	}
 	return tx.Commit().Error
+}
+
+type ArticleScoringCriteria struct {
+}
+
+func (criteria ArticleScoringCriteria) Score(
+	doc types.IndexedDocument, fields interface{}) []float32 {
+	output := make([]float32, 3)
+	if doc.TokenProximity > 2 {
+		output[0] = 1.0 / float32(doc.TokenProximity)
+	} else {
+		output[0] = 1.0
+	}
+	return output
+}
+
+func (a *Article) Search(keyword string, page, size int) []*Article {
+	// 设置分页参数
+	from := (page - 1) * size
+
+	output := global.GVA_INDEX.Search(types.SearchRequest{
+		Text: keyword,
+		RankOptions: &types.RankOptions{
+			ScoringCriteria: &ArticleScoringCriteria{},
+			OutputOffset:    from,
+			MaxOutputs:      size,
+		},
+	})
+	docs := []*Article{}
+	for _, doc := range output.Docs {
+		article, _ := a.FindByArticleId(int(doc.DocId))
+		re := regexp.MustCompile("<[^>]*>")
+		// 使用正则表达式替换HTML标签为空字符串
+		content := re.ReplaceAllString(article.HtmlContent, "")
+		for _, t := range output.Tokens {
+			regx := strings.ToUpper(t)
+			article.HtmlContent = strings.Replace(strings.ToUpper(content), regx, "<mark>"+t+"</mark>", -1)
+			article.Title = strings.Replace(strings.ToUpper(article.Title), regx, "<mark>"+t+"</mark>", -1)
+		}
+		docs = append(docs, article)
+	}
+	return docs
+}
+
+func (a *Article) InitArticleIndex() error {
+	var (
+		articles []*Article
+		err      error
+	)
+	if articles, err = a.FindAll(); err != nil {
+		return errors.New(fmt.Sprintf("find all articles error: %v", err))
+	}
+	for _, article := range articles {
+		global.GVA_INDEX.IndexDocument(uint64(article.ID), types.DocumentIndexData{
+			Content: article.Content,
+			Fields: map[string]string{
+				"Identify":  article.Identify,
+				"CreatedAt": article.CreatedAt.Format("2006年01月02日"),
+			},
+			Labels: []string{article.Title},
+		}, false)
+	}
+	global.GVA_INDEX.FlushIndex()
+	return nil
+}
+
+func (a *Article) FindAll() ([]*Article, error) {
+	var articles []*Article
+	err := global.GVA_DB.Find(&articles).Error
+	if err != nil {
+		return nil, err
+	}
+	return articles, nil
 }
 
 func (a *Article) Count() int {
