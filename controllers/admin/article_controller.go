@@ -204,7 +204,6 @@ func (controller *ArticleController) EditArticle(c *gin.Context) {
 			err          error
 
 			htmlContent string
-			tocJson     string
 			frontMatter *models.FrontMatter
 			markdownStr string
 		)
@@ -285,14 +284,13 @@ func (controller *ArticleController) EditArticle(c *gin.Context) {
 				"title":        title,
 				"content":      markdownStr,
 				"html_content": htmlContent,
-				"toc":          tocJson,
 				"type":         models.ArticleTyle(articleType),
 				"Category":     category,
 				"Tags":         tags,
 				"Collection":   collection,
 			}
 			if err := obj.Update(updates); err != nil {
-				global.GVA_LOG.Warn("Failed to edit article", err)
+				global.GVA_LOG.Warn(fmt.Sprintf("Failed to edit article: %v", err))
 				c.JSON(http.StatusInternalServerError, gin.H{"status": false, "msg": "更新文档失败"})
 				return
 			}

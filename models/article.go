@@ -258,12 +258,12 @@ func (a *Article) Update(updates map[string]interface{}) error {
 	}
 	global.GVA_INDEX.RemoveDocument(uint64(a.ID), true)
 	global.GVA_INDEX.IndexDocument(uint64(a.ID), types.DocumentIndexData{
-		Content: updates["Content"].(string),
+		Content: updates["content"].(string),
 		Fields: map[string]string{
 			"Identify":  a.Identify,
 			"CreatedAt": a.CreatedAt.Format("2006年01月02日"),
 		},
-		Labels: []string{updates["Title"].(string)},
+		Labels: []string{updates["title"].(string)},
 	}, true)
 	return tx.Commit().Error
 }
