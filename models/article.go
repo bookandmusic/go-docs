@@ -669,11 +669,6 @@ func (a *Article) sortChildrenByOrder(children []*CollectionTocItem) {
 }
 
 func (a *Article) UpdateArticleSort(tocList []*CollectionTocItem) {
-	if len(tocList) > 0 {
-		if article, err := a.FindByArticleId(tocList[0].ID); err == nil {
-			article.Collection.Update(map[string]interface{}{"first_doc": article.Identify})
-		}
-	}
 	for _, tocItem := range tocList {
 		// 根据ID查找数据库中的Article
 		var (

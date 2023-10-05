@@ -17,11 +17,13 @@ $(function () {
         // Great Than MD
         (992 <= width) && (function () {
             pictureContainer.empty();
-            let columnNum = 4;
-            let column01 = $("<div class='col-lg-3 px-1'></div>");
-            let column02 = $("<div class='col-lg-3 px-1'></div>");
-            let column03 = $("<div class='col-lg-3 px-1'></div>");
-            let column04 = $("<div class='col-lg-3 px-1'></div>");
+            let columnNum = 6;
+            let column01 = $("<div class='col-lg-2 px-1'></div>");
+            let column02 = $("<div class='col-lg-2 px-1'></div>");
+            let column03 = $("<div class='col-lg-2 px-1'></div>");
+            let column04 = $("<div class='col-lg-2 px-1'></div>");
+            let column05 = $("<div class='col-lg-2 px-1'></div>");
+            let column06 = $("<div class='col-lg-2 px-1'></div>");
             allPictures.each(function (index, value) {
                 if (index % columnNum === columnNum - 1) {
                     column01.append(value);
@@ -35,8 +37,14 @@ $(function () {
                 if (index % columnNum === columnNum - 4) {
                     column04.append(value);
                 }
+                if (index % columnNum === columnNum - 5) {
+                    column05.append(value);
+                }
+                if (index % columnNum === columnNum - 6) {
+                    column06.append(value);
+                }
             });
-            pictureContainer.append(column04).append(column03).append(column02).append(column01);
+            pictureContainer.append(column06).append(column05).append(column04).append(column03).append(column02).append(column01);
         })();
         // Less Than MD
         (width < 992) && (function () {

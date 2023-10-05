@@ -11,6 +11,7 @@ Status: OK
 .picture-item {
     /*卡片的阴影*/
     box-shadow: 0 4px 8px 0 rgba(28, 31, 33, .1);
+    font-size: 75%;
 }
 
 /*图片*/
@@ -49,17 +50,6 @@ Status: OK
 /*图片详情盒子划过的时候，图片的变化*/
 .picture-details:hover .picture {
     transform: scale(1.1);
-}
-
-/*小屏幕下使用*/
-@media (max-width: 576px) {
-    .picture-bottom {
-        font-size: 75%;
-    }
-
-    .picture-description {
-        font-size: 75%;
-    }
 }
 
 /*导航栏固定*/

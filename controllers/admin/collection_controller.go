@@ -173,6 +173,13 @@ func (controller *CollectionController) TocList(c *gin.Context) {
 			return
 		}
 		c.JSON(http.StatusOK, gin.H{"status": true, "msg": ""})
+		if len(sort_data) > 0 {
+			if article, err := models.NewArticle().FindByArticleId(sort_data[0].ID); err == nil {
+				if err := article.Collection.Update(map[string]interface{}{"first_doc": article.Identify}); err != nil {
+					global.GVA_LOG.Error(fmt.Sprintf("update collection %s first doc error: %v", article.Collection.Name, err))
+				}
+			}
+		}
 		models.NewArticle().UpdateArticleSort(sort_data)
 		return
 	}
