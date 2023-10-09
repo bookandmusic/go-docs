@@ -28,18 +28,13 @@ func serverInitAction() {
 	// 初始化数据库连接
 	global.GVA_DB = core.InitDatabase()
 	global.GVA_MINIFY = core.InitMinify()
-	global.GVA_INDEX = core.InitSearchEngine()
-
-	if fileLogger, ok := global.GVA_LOG.Out.(*lumberjack.Logger); ok {
-		// 在程序结束时关闭日志文件
-		defer fileLogger.Close()
-	}
+	global.GVA_BLEVE_INDEX = core.InitBleveIndex()
 
 	if global.GVA_DB != nil {
 		core.MigrateModels()
 	}
 
-	if global.GVA_INDEX != nil && global.GVA_DB != nil {
+	if global.GVA_BLEVE_INDEX != nil && global.GVA_DB != nil {
 		models.NewArticle().InitArticleIndex()
 	}
 }
@@ -50,18 +45,6 @@ func dbInitAction() {
 	global.GVA_LOG = core.InitLog()
 	// 初始化数据库连接
 	global.GVA_DB = core.InitDatabase()
-
-	if fileLogger, ok := global.GVA_LOG.Out.(*lumberjack.Logger); ok {
-		// 在程序结束时关闭日志文件
-		defer fileLogger.Close()
-	}
-
-	if global.GVA_DB != nil {
-		core.MigrateModels()
-		// 程序结束前关闭数据库链接
-		db, _ := global.GVA_DB.DB()
-		defer db.Close()
-	}
 }
 
 func main() {
@@ -99,6 +82,10 @@ func main() {
 					// 程序结束前关闭数据库链接
 					db, _ := global.GVA_DB.DB()
 					defer db.Close()
+					if fileLogger, ok := global.GVA_LOG.Out.(*lumberjack.Logger); ok {
+						// 在程序结束时关闭日志文件
+						defer fileLogger.Close()
+					}
 					commands.CreateSuperUser("admin", "123456")
 					core.RunServer()
 					return nil
@@ -129,6 +116,10 @@ func main() {
 					// 程序结束前关闭数据库链接
 					db, _ := global.GVA_DB.DB()
 					defer db.Close()
+					if fileLogger, ok := global.GVA_LOG.Out.(*lumberjack.Logger); ok {
+						// 在程序结束时关闭日志文件
+						defer fileLogger.Close()
+					}
 					return commands.CreateSuperUser(username, password)
 				},
 			},

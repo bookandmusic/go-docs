@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	bleve "github.com/blevesearch/bleve/v2"
 	"github.com/huichen/wukong/types"
 	yaml "gopkg.in/yaml.v2"
 	"gorm.io/gorm"
@@ -142,14 +143,9 @@ func (a *Article) Create(article *Article) error {
 		tx.Rollback()
 		return err
 	}
-	global.GVA_INDEX.IndexDocument(uint64(article.ID), types.DocumentIndexData{
-		Content: article.Content,
-		Fields: map[string]string{
-			"Identify":  article.Identify,
-			"CreatedAt": article.CreatedAt.Format("2006年01月02日"),
-		},
-		Labels: []string{article.Title},
-	}, true)
+	if err := a.BleveIndexAddArticle(article); err != nil {
+		global.GVA_LOG.Error(fmt.Sprintf("bleve index add article error: %v", err))
+	}
 	return tx.Commit().Error
 }
 
@@ -237,7 +233,11 @@ func (a *Article) Update(updates map[string]interface{}) error {
 	tx.Model(a).Association("Tags").Clear()
 
 	// 更新 Tags 字段（如果更新映射中包含 "Tags" 键）
-	if tags, ok := updates["Tags"].([]Tag); ok {
+	var (
+		tags []Tag
+		ok   bool
+	)
+	if tags, ok = updates["Tags"].([]Tag); ok {
 		for _, tag := range tags {
 			if val, ok := tagNum[tag.ID]; ok {
 				tag.Num = val + 1
@@ -256,15 +256,13 @@ func (a *Article) Update(updates map[string]interface{}) error {
 		tx.Rollback()
 		return err
 	}
-	global.GVA_INDEX.RemoveDocument(uint64(a.ID), true)
-	global.GVA_INDEX.IndexDocument(uint64(a.ID), types.DocumentIndexData{
-		Content: updates["content"].(string),
-		Fields: map[string]string{
-			"Identify":  a.Identify,
-			"CreatedAt": a.CreatedAt.Format("2006年01月02日"),
-		},
-		Labels: []string{updates["title"].(string)},
-	}, true)
+
+	a.BleveIndexRemoveArticle(a.Identify)
+	a.BleveIndexAddArticle(&Article{
+		Title:    updates["title"].(string),
+		Content:  updates["content"].(string),
+		Identify: a.Identify,
+	})
 	return tx.Commit().Error
 }
 
@@ -303,7 +301,10 @@ func (a *Article) DeleteByArticleIds(articleIds []int) error {
 			}
 		}
 		tx.Model(article).Where("id = ?", articleId).Unscoped().Delete(&Article{})
-		global.GVA_INDEX.RemoveDocument(uint64(articleId), true)
+		if err := a.BleveIndexRemoveArticle(article.Identify); err != nil {
+			global.GVA_LOG.Error(fmt.Sprintf("remove bleve index error by article %s : %v", article.Title, err))
+		}
+
 	}
 	return tx.Commit().Error
 }
@@ -323,33 +324,9 @@ func (criteria ArticleScoringCriteria) Score(
 }
 
 func (a *Article) Search(keyword string, page, size int) []*Article {
-	// 设置分页参数
-	from := (page - 1) * size
-
-	output := global.GVA_INDEX.Search(types.SearchRequest{
-		Text: keyword,
-		RankOptions: &types.RankOptions{
-			ScoringCriteria: &ArticleScoringCriteria{},
-			OutputOffset:    from,
-			MaxOutputs:      size,
-		},
-	})
-	docs := []*Article{}
-	for _, doc := range output.Docs {
-		article, err := a.FindByArticleId(int(doc.DocId))
-		if err != nil {
-			global.GVA_LOG.Error(fmt.Sprintf("find article by id: %d, error: %v", doc.DocId, err))
-			continue
-		}
-		re := regexp.MustCompile("<[^>]*>")
-		// 使用正则表达式替换HTML标签为空字符串
-		content := re.ReplaceAllString(article.HtmlContent, "")
-		for _, t := range output.Tokens {
-			regx := strings.ToUpper(t)
-			article.HtmlContent = strings.Replace(strings.ToUpper(content), regx, "<mark>"+t+"</mark>", -1)
-			article.Title = strings.Replace(strings.ToUpper(article.Title), regx, "<mark>"+t+"</mark>", -1)
-		}
-		docs = append(docs, article)
+	docs, err := a.BleveIndexSearchArticle(keyword, page, size)
+	if err != nil {
+		global.GVA_LOG.Error(fmt.Sprintf("search article by bleve index error: %v", err))
 	}
 	return docs
 }
@@ -363,17 +340,52 @@ func (a *Article) InitArticleIndex() error {
 		return errors.New(fmt.Sprintf("find all articles error: %v", err))
 	}
 	for _, article := range articles {
-		global.GVA_INDEX.IndexDocument(uint64(article.ID), types.DocumentIndexData{
-			Content: article.Content,
-			Fields: map[string]string{
-				"Identify":  article.Identify,
-				"CreatedAt": article.CreatedAt.Format("2006年01月02日"),
-			},
-			Labels: []string{article.Title},
-		}, false)
+		if err := a.BleveIndexAddArticle(article); err != nil {
+			global.GVA_LOG.Error(fmt.Sprintf("bleve index add article error: %v", err))
+		}
 	}
-	global.GVA_INDEX.FlushIndex()
 	return nil
+}
+
+func (a *Article) BleveIndexAddArticle(article *Article) error {
+	return global.GVA_BLEVE_INDEX.Index(article.Identify, map[string]any{
+		"Content": article.Content,
+		"Title":   article.Title,
+	})
+}
+
+func (a *Article) BleveIndexRemoveArticle(articleIdentify string) error {
+	return global.GVA_BLEVE_INDEX.Delete(articleIdentify)
+}
+
+func (a *Article) BleveIndexSearchArticle(keyword string, page, size int) ([]*Article, error) {
+	from := (page - 1) * size
+
+	query := bleve.NewQueryStringQuery(fmt.Sprintf("Content:%s OR Title:%s", keyword, keyword))
+	searchRequest := bleve.NewSearchRequest(query)
+	searchRequest.From = from
+	searchRequest.Size = size
+
+	highlight := bleve.NewHighlight()
+	highlight.AddField("Title")
+	highlight.AddField("Content")
+	searchRequest.Highlight = highlight
+
+	results := []*Article{}
+
+	searchResult, err := global.GVA_BLEVE_INDEX.Search(searchRequest)
+	if err != nil {
+		return results, err
+	}
+
+	for _, hit := range searchResult.Hits {
+		item := &Article{}
+		item.Content = hit.Fragments["Content"][0]
+		item.Title = hit.Fragments["Title"][0]
+		item.Identify = hit.ID
+		results = append(results, item)
+	}
+	return results, nil
 }
 
 func (a *Article) FindAll() ([]*Article, error) {

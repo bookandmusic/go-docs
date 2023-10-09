@@ -19,10 +19,10 @@ RUN minify -r -o . ./static
 RUN go mod tidy
 
 # 编译Go项目为二进制文件
-RUN GOOS=linux GOARCH=amd64 go build -ldflags "-linkmode external -extldflags -static" -o godocs 
+RUN GOOS=linux CGO_ENABLED=1 GOARCH=amd64 go build -ldflags="-s -w" -installsuffix cgo -o godocs 
 
 # 第二阶段：运行时环境
-FROM alpine:latest
+FROM ubuntu:latest
 
 WORKDIR /app
 
@@ -32,10 +32,10 @@ COPY --from=builder /app/godocs .
 # 复制静态文件和模板
 COPY --from=builder /app/static ./static
 COPY --from=builder /app/templates ./templates
-# 复制索引字典数据
-COPY --from=builder /app/index ./index
 # 复制配置文件
 COPY --from=builder /app/config/config.ini ./config/config.ini
+# 复制gojieba字典文件
+COPY --from=builder /app/lib/gojieba/dict ./lib/gojieba/dict
 
 CMD ["-c", "/app/config/config.ini"]
 ENTRYPOINT ["/app/godocs", "server"]

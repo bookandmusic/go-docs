@@ -9,4 +9,5 @@ logs/*
 database/*
 uploads/*
 contrib/bin/*
+bleve.index/*
 .DS_Store

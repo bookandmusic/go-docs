@@ -3,6 +3,7 @@ module github.com/bookandmusic/docs
 go 1.21
 
 require (
+	github.com/blevesearch/bleve/v2 v2.3.10
 	github.com/fatih/color v1.13.0
 	github.com/flosch/pongo2/v6 v6.0.0
 	github.com/fogleman/gg v1.3.0
@@ -16,7 +17,9 @@ require (
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/spf13/viper v1.16.0
 	github.com/tdewolff/minify/v2 v2.12.9
+	github.com/ttys3/gojieba-bleve/v2 v2.1.0
 	github.com/urfave/cli/v2 v2.25.7
+	github.com/yanyiwu/gojieba v1.3.0
 	github.com/yuin/goldmark v1.4.13
 	gitlab.com/go-box/pongo2gin/v6 v6.0.3
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
@@ -27,28 +30,39 @@ require (
 )
 
 require (
+	github.com/RoaringBitmap/roaring v1.2.3 // indirect
 	github.com/adamzy/cedar-go v0.0.0-20170805034717-80a9c64b256d // indirect
-	github.com/boltdb/bolt v1.3.1 // indirect
+	github.com/bits-and-blooms/bitset v1.2.0 // indirect
+	github.com/blevesearch/bleve_index_api v1.0.6 // indirect
+	github.com/blevesearch/geo v0.1.18 // indirect
+	github.com/blevesearch/go-porterstemmer v1.0.3 // indirect
+	github.com/blevesearch/gtreap v0.1.1 // indirect
+	github.com/blevesearch/mmap-go v1.0.4 // indirect
+	github.com/blevesearch/scorch_segment_api/v2 v2.1.6 // indirect
+	github.com/blevesearch/segment v0.9.1 // indirect
+	github.com/blevesearch/snowballstem v0.9.0 // indirect
+	github.com/blevesearch/upsidedown_store_api v1.0.2 // indirect
+	github.com/blevesearch/vellum v1.0.10 // indirect
+	github.com/blevesearch/zapx/v11 v11.3.10 // indirect
+	github.com/blevesearch/zapx/v12 v12.3.10 // indirect
+	github.com/blevesearch/zapx/v13 v13.3.10 // indirect
+	github.com/blevesearch/zapx/v14 v14.3.10 // indirect
+	github.com/blevesearch/zapx/v15 v15.3.13 // indirect
 	github.com/chenzhuoyu/iasm v0.9.0 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
-	github.com/cznic/fileutil v0.0.0-20181122101858-4d67cfea8c87 // indirect
-	github.com/cznic/internal v0.0.0-20181122101858-3279554c546e // indirect
-	github.com/cznic/kv v0.0.0-20181122101858-e9cdcade440e // indirect
-	github.com/cznic/lldb v1.1.0 // indirect
-	github.com/cznic/mathutil v0.0.0-20181122101859-297441e03548 // indirect
-	github.com/cznic/sortutil v0.0.0-20181122101858-f5f958428db8 // indirect
-	github.com/cznic/zappy v0.0.0-20181122101859-ca47d358d4b1 // indirect
-	github.com/edsrzf/mmap-go v1.1.0 // indirect
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
+	github.com/golang/geo v0.0.0-20210211234256-740aa86cb551 // indirect
+	github.com/golang/protobuf v1.5.3 // indirect
+	github.com/golang/snappy v0.0.4 // indirect
 	github.com/gorilla/context v1.1.1 // indirect
 	github.com/gorilla/sessions v1.1.3 // indirect
-	github.com/huichen/murmur v0.0.0-20130808212358-e0489551cf51 // indirect
 	github.com/huichen/sego v0.0.0-20210824061530-c87651ea5c76 // indirect
 	github.com/mattn/go-colorable v0.1.12 // indirect
-	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
+	github.com/mschoch/smat v0.2.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/tdewolff/parse/v2 v2.6.8 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
+	go.etcd.io/bbolt v1.3.7 // indirect
 	golang.org/x/image v0.0.0-20190802002840-cff245a6509b // indirect
 )
 

@@ -54,33 +54,9 @@
             </a>
             <div class="d-flex align-items-center">
                 <div class="post-summary text-muted text-break">
-                    {{ article.HtmlContent | safe }}
+                    {{ article.Content | safe }}
                 </div>
             </div>
-
-            <small>
-                {% if article.Tags|length != 0 %}
-                <span class="mr-3 font-weight-bold d-md-inline d-none">
-                    <i class="fas fa-tags mr-1"></i>
-                    {% for tag in article.Tags %}
-                    <a class="text-body mr-1" href="/tags/{{ tag.Identify }}">{{ tag.Name }}</a>
-                    {% endfor %}
-                </span>
-                {% endif %}
-
-
-                {% if article.Category.Name != "" %}
-                <span class="mr-3 font-weight-bold d-md-inline d-none">
-                    <i class="fas fa-list mr-2"></i>
-                    <a class="text-body mr-1" href="/categories/{{ article.Category.Identify }}">
-                        {{article.Category.Name }}
-                    </a>
-                </span>
-                {% endif %}
-                <span class="mr-3">
-                    <i class="fas fa-calendar-alt mr-2"></i>{{ article.CreatedAt.Format("2006年01月02日") }}
-                </span>
-            </small>
         </div>
     </div>
     {% endfor %}
