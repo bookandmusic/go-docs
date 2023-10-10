@@ -37,5 +37,5 @@ COPY --from=builder /app/index ./index
 # 复制配置文件
 COPY --from=builder /app/config/config.ini ./config/config.ini
 
-# 执行创建用户和启动服务的命令
-CMD ./godocs csu --username admin --password 123456 && ./godocs server
+CMD ["-c", "/app/config/config.ini"]
+ENTRYPOINT ["/app/godocs", "server"]

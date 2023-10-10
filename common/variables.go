@@ -1,6 +1,7 @@
 package common
 
 import (
+	"github.com/bookandmusic/docs/global"
 	"github.com/bookandmusic/docs/models"
 )
 
@@ -52,15 +53,15 @@ func GenerateSiteInfo() SiteInfo {
 	}
 
 	if SiteName == "" {
-		SiteName = "GDocs"
+		SiteName = global.GVA_CONFIG.Server.ServerName
 	}
 
 	if SiteDescription == "" {
-		SiteDescription = "踮起脚尖，看得更远"
+		SiteDescription = global.GVA_CONFIG.Server.Description
 	}
 
 	if SiteKeyword == "" {
-		SiteKeyword = "Gin,Layui,Docs,Blog"
+		SiteKeyword = global.GVA_CONFIG.Server.Keyword
 	}
 
 	site_info := SiteInfo{

@@ -8,4 +8,5 @@
 logs/*
 database/*
 uploads/*
+contrib/bin/*
 .DS_Store

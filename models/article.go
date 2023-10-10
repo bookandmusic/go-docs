@@ -336,7 +336,11 @@ func (a *Article) Search(keyword string, page, size int) []*Article {
 	})
 	docs := []*Article{}
 	for _, doc := range output.Docs {
-		article, _ := a.FindByArticleId(int(doc.DocId))
+		article, err := a.FindByArticleId(int(doc.DocId))
+		if err != nil {
+			global.GVA_LOG.Error(fmt.Sprintf("find article by id: %d, error: %v", doc.DocId, err))
+			continue
+		}
 		re := regexp.MustCompile("<[^>]*>")
 		// 使用正则表达式替换HTML标签为空字符串
 		content := re.ReplaceAllString(article.HtmlContent, "")
