@@ -99,7 +99,7 @@
             {% if pre %}
             <li class="page-item ">
                 <a class="page-link"
-                    href="{% if current_page-1 ==1 %} / {% else %} /page/{{current_page -1 }} {% endif %}"
+                    href="{% if current_page-1 == 1 %} / {% else %} /page/{{current_page -1 }} {% endif %}"
                     aria-label="上一页">
                     <span aria-hidden="true">&laquo;</span>
                 </a>
@@ -121,7 +121,7 @@
             </li>
             {% else %}
             <li class="page-item">
-                <a class="page-link" href="/page/{{ page }}">{{page}}</a>
+                <a class="page-link" href="{% if page == 1 %} / {% else %} /page/{{page}} {% endif %}">{{page}}</a>
             </li>
             {% endif %}
 

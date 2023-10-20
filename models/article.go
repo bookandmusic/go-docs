@@ -361,7 +361,7 @@ func (a *Article) BleveIndexRemoveArticle(articleIdentify string) error {
 func (a *Article) BleveIndexSearchArticle(keyword string, page, size int) ([]*Article, error) {
 	from := (page - 1) * size
 
-	query := bleve.NewQueryStringQuery(fmt.Sprintf("Content:%s OR Title:%s", keyword, keyword))
+	query := bleve.NewQueryStringQuery(fmt.Sprintf("Content:%s Title:%s", keyword, keyword))
 	searchRequest := bleve.NewSearchRequest(query)
 	searchRequest.From = from
 	searchRequest.Size = size

@@ -66,7 +66,7 @@
                 </a>
             </li>
             <li class="breadcrumb-item text-truncate">
-               归档
+                归档
             </li>
             <li class="breadcrumb-item text-truncate font-weight-bold">
                 {{ article.Title }}
@@ -139,6 +139,30 @@
     </div>
 </section>
 <div class="social-share-cs mb-5"></div>
+{% if comment != "" %}
+<div class="mb-5">
+    <article id="comments">
+        <span hidden="">
+            <meta itemprop="discussionUrl" content="/archives/{{article.Identify}}#comments">
+        </span>
+        <p ct=""><i class="fas fa-comments"></i> 评论</p>
+        <div id="layoutHelper-comments">
+            <div>
+                {% if comment == "giscus" %}
+                <div id="giscus_container">
+                    <script src="https://giscus.app/client.js" data-repo="{{comment_plugin.GiscusDataRepo}}"
+                        data-repo-id="{{comment_plugin.GiscusDataRepoId}}"
+                        data-category="{{comment_plugin.GiscusDataCategory}}"
+                        data-category-id="{{comment_plugin.GiscusDataCategoryId}}" data-mapping="pathname"
+                        data-reactions-enabled="1" data-emit-metadata="0" data-lang="zh-CN" data-theme="light"
+                        crossorigin="anonymous"></script>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </article>
+</div>
+{% endif %}
 {% endblock %}
 {% block right %}
 

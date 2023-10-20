@@ -59,7 +59,12 @@ func (controller *BlogController) Index(c *gin.Context) {
 			}
 			pageType = "标签"
 		} else {
-			title = "首页"
+			if page == 1 {
+				title = "首页"
+			} else {
+				title = "博客"
+			}
+
 			if articles, total, err = models.NewArticle().FindBlogs(page, 10); err != nil {
 				global.GVA_LOG.Error(fmt.Sprintf("find blogs error: %v", err))
 			}
@@ -105,6 +110,18 @@ func (controller *BlogController) Post(c *gin.Context) {
 		article, _ := obj.FindByIdentify(identify)
 		site_info := common.GenerateSiteInfo()
 		person_info := common.GeneratePersonInfo()
+		comment := site_info.Comment
+		var (
+			commentPlugin interface{}
+			ok            bool
+		)
+		switch comment {
+		case "giscus":
+			if ok, commentPlugin = common.GenerateGiscusInfo(); !ok {
+				comment = ""
+			}
+		}
+
 		if article == nil {
 			c.HTML(http.StatusNotFound, "public/404.html", pongo2.Context{
 				"site_info": site_info,
@@ -120,6 +137,8 @@ func (controller *BlogController) Post(c *gin.Context) {
 					"person_info":      person_info,
 					"previous_article": previousArticle,
 					"next_article":     nextArticle,
+					"comment_plugin":   commentPlugin,
+					"comment":          comment,
 				})
 			} else {
 				articles, _ := obj.FindByCollectionId(int(article.CollectionID))
@@ -133,6 +152,8 @@ func (controller *BlogController) Post(c *gin.Context) {
 					"person_info":      person_info,
 					"previous_article": previousArticle,
 					"next_article":     nextArticle,
+					"comment_plugin":   commentPlugin,
+					"comment":          comment,
 				})
 			}
 

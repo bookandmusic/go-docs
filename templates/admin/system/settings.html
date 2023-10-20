@@ -20,8 +20,9 @@
     <div class="layui-panel">
         <div class="layui-tab layui-tab-brief" lay-filter="test-hash">
             <ul class="layui-tab-title">
-                <li class="layui-this" lay-id="blog">站点信息</li>
-                <li lay-id="doc">个人信息</li>
+                <li class="layui-this" lay-id="site_info">站点信息</li>
+                <li lay-id="person_info">个人信息</li>
+                <li lay-id="giscus">Giscus</li>
             </ul>
             <div class="layui-tab-content">
                 <div class="layui-tab-item layui-show">
@@ -69,6 +70,13 @@
                             </div>
                         </div>
                         <div class="layui-form-item">
+                            <label class="layui-form-label">文章评论</label>
+                            <div class="layui-input-block">
+                                <input type="radio" name="comment" value="" title="关闭" {% if site_info.Comment == "" %} checked {% endif %}>
+                                <input type="radio" name="comment" value="giscus" title="Giscus" {% if site_info.Comment == "giscus" %} checked {% endif %}>
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
                             <input type="hidden" name="site_icon" value="{{site_info.Icon}}" id="Icon">
                             <label class="layui-form-label">Icon</label>
                             <button type="button" class="layui-btn" id="uploadIcon">
@@ -113,8 +121,8 @@
                         <div class="layui-form-item">
                             <label class="layui-form-label">作者名称</label>
                             <div class="layui-input-block">
-                                <input type="text" name="author_name" value="{{ person_info.AuthorName }}" placeholder="请输入作者名称"
-                                    autocomplete="off" class="layui-input">
+                                <input type="text" name="author_name" value="{{ person_info.AuthorName }}"
+                                    placeholder="请输入作者名称" autocomplete="off" class="layui-input">
                             </div>
                         </div>
                         <div class="layui-form-item">
@@ -136,15 +144,15 @@
                         <div class="layui-form-item">
                             <label class="layui-form-label">所在地址</label>
                             <div class="layui-input-block">
-                                <input type="text" name="author_address" value="{{ person_info.AuthorAddress }}" placeholder="请输入所在地址"
-                                    autocomplete="off" class="layui-input">
+                                <input type="text" name="author_address" value="{{ person_info.AuthorAddress }}"
+                                    placeholder="请输入所在地址" autocomplete="off" class="layui-input">
                             </div>
                         </div>
                         <div class="layui-form-item">
                             <label class="layui-form-label">Email</label>
                             <div class="layui-input-block">
-                                <input type="text" name="email" value="{{ person_info.Email }}"
-                                    placeholder="请输入Email" autocomplete="off" class="layui-input">
+                                <input type="text" name="email" value="{{ person_info.Email }}" placeholder="请输入Email"
+                                    autocomplete="off" class="layui-input">
                             </div>
                         </div>
                         <div class="layui-form-item">
@@ -179,6 +187,45 @@
                             <div class="layui-input-block">
                                 <button class="layui-btn layui-btn-normal" lay-submit
                                     lay-filter="savePersonInfo">确认保存</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-tab-item">
+                    <div class="layui-form layuimini-form" lay-filter="giscus-settings">
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">仓库</label>
+                            <div class="layui-input-block">
+                                <input type="text" name="giscus_repo" value="{{ giscus_info.GiscusDataRepo }}"
+                                    placeholder="请输入仓库名" autocomplete="off" class="layui-input">
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">仓库ID</label>
+                            <div class="layui-input-block">
+                                <input type="text" name="giscus_repo_id" value="{{ giscus_info.GiscusDataRepoId }}"
+                                    placeholder="请输入仓库ID" autocomplete="off" class="layui-input">
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">分类</label>
+                            <div class="layui-input-block">
+                                <input type="text" name="giscus_category" value="{{ giscus_info.GiscusDataCategory }}"
+                                    placeholder="请输入分类名" autocomplete="off" class="layui-input">
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">分类ID</label>
+                            <div class="layui-input-block">
+                                <input type="text" name="giscus_category_id"
+                                    value="{{ giscus_info.GiscusDataCategoryId }}" placeholder="请输入分类ID"
+                                    autocomplete="off" class="layui-input">
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <div class="layui-input-block">
+                                <button class="layui-btn layui-btn-normal" lay-submit
+                                    lay-filter="saveGiscusInfo">确认保存</button>
                             </div>
                         </div>
                     </div>
@@ -280,7 +327,7 @@
     });
 
     layui.use(['form', 'miniTab'], function () {
-        var form = layui.form,miniTab = layui.miniTab;
+        var form = layui.form, miniTab = layui.miniTab;
 
         form.on(`submit(saveSiteInfo)`, function (data) {
             jsonSubmit(
@@ -297,6 +344,18 @@
         form.on(`submit(savePersonInfo)`, function (data) {
             jsonSubmit(
                 `/admin/system/settings/?resource=person_info`,
+                csrfToken,
+                data.field,
+                function (index, r) {
+                    var layer = layui.layer;
+                    layer.close(index);
+                    miniTab.deleteCurrentByIframe();
+                });
+            return false;
+        })
+        form.on(`submit(saveGiscusInfo)`, function (data) {
+            jsonSubmit(
+                `/admin/system/settings/?resource=giscus_info`,
                 csrfToken,
                 data.field,
                 function (index, r) {

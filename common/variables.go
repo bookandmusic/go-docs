@@ -5,6 +5,13 @@ import (
 	"github.com/bookandmusic/docs/models"
 )
 
+type GiscusConfig struct {
+	GiscusDataRepo       string `json:"giscus_repo"`
+	GiscusDataRepoId     string `json:"giscus_repo_id"`
+	GiscusDataCategory   string `json:"giscus_category"`
+	GiscusDataCategoryId string `json:"giscus_category_id"`
+}
+
 type SiteInfo struct {
 	Name     string `json:"site_name"`
 	Url      string `json:"site_url"`
@@ -14,6 +21,7 @@ type SiteInfo struct {
 	Logo     string `json:"site_logo"`
 	Since    string `json:"since_year"`
 	Beian    string `json:"site_beian"`
+	Comment  string `json:"comment"`
 }
 
 type PersonInfo struct {
@@ -43,6 +51,7 @@ func GenerateSiteInfo() SiteInfo {
 	SiteDescription := models.NewSetting().GetValue("site_description")
 	SiteKeyword := models.NewSetting().GetValue("site_keyword")
 	SiteBeian := models.NewSetting().GetValue("site_beian")
+	Comment := models.NewSetting().GetValue("comment")
 
 	if SiteIcon == "" {
 		SiteIcon = "/static/public/images/favicon.ico"
@@ -73,8 +82,28 @@ func GenerateSiteInfo() SiteInfo {
 		Logo:     SiteLogo,
 		Url:      SiteUrl,
 		Beian:    SiteBeian,
+		Comment:  Comment,
 	}
 	return site_info
+}
+
+func GenerateGiscusInfo() (bool, GiscusConfig) {
+	GiscusDataRepo := models.NewSetting().GetValue("giscus_repo")
+	GiscusDataRepoId := models.NewSetting().GetValue("giscus_repo_id")
+	GiscusDataCategory := models.NewSetting().GetValue("giscus_category")
+	GiscusDataCategoryId := models.NewSetting().GetValue("giscus_category_id")
+	var isComment bool
+	if GiscusDataCategory != "" && GiscusDataCategoryId != "" && GiscusDataRepo != "" && GiscusDataRepoId != "" {
+		isComment = true
+	} else {
+		isComment = false
+	}
+	return isComment, GiscusConfig{
+		GiscusDataRepo:       GiscusDataRepo,
+		GiscusDataRepoId:     GiscusDataRepoId,
+		GiscusDataCategory:   GiscusDataCategory,
+		GiscusDataCategoryId: GiscusDataCategoryId,
+	}
 }
 
 func GenerateArticleInfo() ArticleInfo {

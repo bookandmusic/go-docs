@@ -3,7 +3,6 @@ package admin
 import (
 	"fmt"
 	"net/http"
-	"reflect"
 
 	pongo2 "github.com/flosch/pongo2/v6"
 	"github.com/gin-gonic/gin"
@@ -152,47 +151,35 @@ func (u *AdminController) AdminCenterMenu(c *gin.Context) {
 
 func (u *AdminController) SystemSetting(c *gin.Context) {
 	if c.Request.Method == "GET" {
+		_, giscus_info := common.GenerateGiscusInfo()
 		c.HTML(http.StatusOK, "admin/system/settings.html", pongo2.Context{
 			"csrfToken":   csrf.Token(c.Request),
 			"site_info":   common.GenerateSiteInfo(),
 			"person_info": common.GeneratePersonInfo(),
+			"giscus_info": giscus_info,
 		})
 	} else {
 		resource := c.Query("resource")
 		var (
-			objType  reflect.Type
-			objValue reflect.Value
+			obj     map[string]string
+			err_msg string
 		)
-		if resource == "site_info" {
-			obj := common.SiteInfo{}
-			if err := c.BindJSON(&obj); err != nil {
-				global.GVA_LOG.Warn(fmt.Sprintf("parse params err: %v", err))
-				c.JSON(http.StatusBadRequest, gin.H{"status": false, "msg": "站点信息有误"})
-				return
+		if err := c.BindJSON(&obj); err != nil {
+			global.GVA_LOG.Warn(fmt.Sprintf("parse params err: %v", err))
+			switch resource {
+			case "site_info":
+				err_msg = "站点信息有误"
+			case "person_info":
+				err_msg = "个人信息有误"
+			case "giscus_info":
+				err_msg = "评论Giscus插件信息有误"
 			}
-			// 使用反射获取结构体的类型和值
-			objType = reflect.TypeOf(obj)
-			objValue = reflect.ValueOf(obj)
-		} else {
-			obj := common.PersonInfo{}
-			if err := c.BindJSON(&obj); err != nil {
-				global.GVA_LOG.Warn(fmt.Sprintf("parse params err: %v", err))
-				c.JSON(http.StatusBadRequest, gin.H{"status": false, "msg": "个人信息有误"})
-				return
-			}
-			// 使用反射获取结构体的类型和值
-			objType = reflect.TypeOf(obj)
-			objValue = reflect.ValueOf(obj)
+			c.JSON(http.StatusBadRequest, gin.H{"status": false, "msg": err_msg})
+			return
 		}
 
 		// 遍历结构体字段
-		for i := 0; i < objType.NumField(); i++ {
-			field := objType.Field(i)
-			fieldValue := objValue.Field(i).Interface()
-
-			// 获取 JSON 标签或字段名作为键
-			key := field.Tag.Get("json")
-			val := fmt.Sprintf("%v", fieldValue)
+		for key, val := range obj {
 			if key != "" && val != "" {
 				if err := models.NewSetting().UpdateOrCreate(key, val); err != nil {
 					global.GVA_LOG.Error(fmt.Sprintf("update system setting '%s':'%s', err: %v", key, val, err))

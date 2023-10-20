@@ -35,7 +35,7 @@ func serverInitAction() {
 	}
 
 	if global.GVA_BLEVE_INDEX != nil && global.GVA_DB != nil {
-		models.NewArticle().InitArticleIndex()
+		go models.NewArticle().InitArticleIndex()
 	}
 }
 
