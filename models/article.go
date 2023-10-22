@@ -13,7 +13,6 @@ import (
 	"time"
 
 	bleve "github.com/blevesearch/bleve/v2"
-	"github.com/huichen/wukong/types"
 	yaml "gopkg.in/yaml.v2"
 	"gorm.io/gorm"
 
@@ -310,17 +309,6 @@ func (a *Article) DeleteByArticleIds(articleIds []int) error {
 }
 
 type ArticleScoringCriteria struct {
-}
-
-func (criteria ArticleScoringCriteria) Score(
-	doc types.IndexedDocument, fields interface{}) []float32 {
-	output := make([]float32, 3)
-	if doc.TokenProximity > 2 {
-		output[0] = 1.0 / float32(doc.TokenProximity)
-	} else {
-		output[0] = 1.0
-	}
-	return output
 }
 
 func (a *Article) Search(keyword string, page, size int) []*Article {

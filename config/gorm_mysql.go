@@ -1,6 +1,8 @@
 package config
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type MySQL struct {
 	Host         string `mapstructure:"host" json:"host" ini:"host"`
