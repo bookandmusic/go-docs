@@ -287,3 +287,8 @@ func GenerateCover(originImgPath, titleFontPath, title, outImgPath string) error
 
 	return nil
 }
+
+func IsImageFile(filename string) bool {
+	ext := strings.ToLower(filepath.Ext(filename))
+	return ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".gif"
+}

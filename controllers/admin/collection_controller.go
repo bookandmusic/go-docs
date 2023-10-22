@@ -3,9 +3,7 @@ package admin
 import (
 	"fmt"
 	"net/http"
-	"path"
 	"strconv"
-	"strings"
 
 	pongo2 "github.com/flosch/pongo2/v6"
 	"github.com/gin-gonic/gin"
@@ -13,7 +11,6 @@ import (
 
 	"github.com/bookandmusic/docs/global"
 	"github.com/bookandmusic/docs/models"
-	"github.com/bookandmusic/docs/utils"
 )
 
 type CollectionController struct{}
@@ -89,7 +86,6 @@ func (controller *CollectionController) EditCollection(c *gin.Context) {
 	} else if c.Request.Method == "POST" {
 		name := c.PostForm("name")
 		author := c.PostForm("author")
-		cover := c.PostForm("cover")
 
 		if name == "" {
 			c.JSON(http.StatusBadRequest, gin.H{"status": false, "msg": "名称是必须的"})
@@ -104,25 +100,8 @@ func (controller *CollectionController) EditCollection(c *gin.Context) {
 			}
 		}
 
-		if cover == "" {
-			originCoverPath := path.Join(global.GVA_CONFIG.Server.WorkingDirectory, "static/public/images/cover.jpeg")
-			outCoverPath := path.Join(global.GVA_CONFIG.Server.UploadPath, utils.GenerateMD5Hash(name)+".png")
-			fontPath := path.Join(global.GVA_CONFIG.Server.WorkingDirectory, "static/public/fonts/songti.ttf")
-			if err := utils.GenerateCover(originCoverPath, fontPath, name, outCoverPath); err != nil {
-				global.GVA_LOG.Error(fmt.Sprintf("generate cover error: %v", err))
-				cover = originCoverPath
-			} else {
-				cover = outCoverPath
-			}
-			// 判断路径是否以 "/" 开头
-			if !strings.HasPrefix(cover, "/") {
-				// 如果不是以 "/" 开头，添加 "/"
-				cover = "/" + cover
-			}
-		}
-
 		if obj == nil || obj.ID == 0 {
-			if err := models.NewCollection().Create(name, author, cover); err != nil {
+			if err := models.NewCollection().Create(name, author); err != nil {
 				global.GVA_LOG.Warn("Failed to add collection", err)
 				c.JSON(http.StatusInternalServerError, gin.H{"status": false, "msg": "编辑文集失败"})
 				return
@@ -131,7 +110,6 @@ func (controller *CollectionController) EditCollection(c *gin.Context) {
 			updates := map[string]interface{}{
 				"name":   name,
 				"author": author,
-				"cover":  cover,
 			}
 			if err := obj.Update(updates); err != nil {
 				global.GVA_LOG.Warn("Failed to edit collection", err)

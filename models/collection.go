@@ -13,7 +13,6 @@ type Collection struct {
 	Name     string    `json:"name"`     // 文集名称
 	Identify string    `json:"identify"` // 唯一标识
 	Author   string    `json:"author"`   // 作者
-	Cover    string    `json:"cover"`    // 封面
 	Num      int       `json:"num"`      // 文章数量
 	FirstDoc string    `json:"first_doc"`
 	Articles []Article `json:"articles"` // 文集包含的文章
@@ -29,12 +28,11 @@ func (c *Collection) Count() int {
 	return int(total)
 }
 
-func (c *Collection) Create(name, author, cover string) error {
+func (c *Collection) Create(name, author string) error {
 	newCollection := Collection{
 		Name:     name,
 		Identify: utils.GenerateMD5Hash(name),
 		Author:   author,
-		Cover:    cover,
 	}
 	if err := global.GVA_DB.Create(&newCollection).Error; err != nil {
 		return err

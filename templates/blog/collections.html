@@ -1,8 +1,71 @@
-{% extends "blog/post.html" %}
+{% extends "blog/base.html" %}
 
 {% block header_script %}
-<link rel="stylesheet" href="/static/blog/css/photos.css">
 <script src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+<style>
+    .col {
+        max-width: 100%;
+        -ms-flex-positive: 1;
+        flex-grow: 1;
+        -ms-flex-preferred-size: 0;
+        flex-basis: 0
+    }
+
+    .row-cols-1>* {
+        max-width: 100%;
+        -ms-flex: 0 0 100%;
+        flex: 0 0 100%
+    }
+
+    @media (min-width:576px) {
+        .row-cols-sm-2>* {
+            max-width: 50%;
+            -ms-flex: 0 0 50%;
+            flex: 0 0 50%
+        }
+    }
+
+    @media (min-width:768px) {
+        .row-cols-md-3>* {
+            max-width: 33.3333%;
+            -ms-flex: 0 0 33.3333%;
+            flex: 0 0 33.3333%
+        }
+    }
+
+    @media (min-width:992px) {
+        .row-cols-lg-4>* {
+            max-width: 25%;
+            -ms-flex: 0 0 25%;
+            flex: 0 0 25%
+        }
+    }
+
+    .mt-10 {
+        margin-top: 4.5rem !important
+    }
+
+    .rounded-home-item {
+        border-radius: 1.25rem !important
+    }
+
+    .rounded-home-item-img,
+    .card-header {
+        border-top-left-radius: 1.25rem !important;
+        border-top-right-radius: 1.25rem !important
+    }
+
+
+    .link-dark {
+        color: #1e2022;
+        transition: all .2s ease-in
+    }
+
+    .link-dark:hover {
+        color: #3765f9;
+        text-decoration: none
+    }
+</style>
 {% endblock %}
 
 
@@ -19,29 +82,22 @@
 </div>
 
 {% else %}
-<div id="pictures">
-   
+<div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 mt-10">
     {% for collection in collections %}
-    <div class="picture-item my-2 bg-white rounded-bottom">
-        <a href="/archives/{{ collection.FirstDoc }}">
-            <div class="picture-details">
-                <img class="picture rounded-top"
-                    src="{{collection.Cover}}"
-                    alt="{{collection.Name}}" loading="lazy"
-                    >
+    <div class="col d-flex justify-content-center pb-5 rounded-home-item">
+        <div class="card shadow position-relative h-100 rounded-home-item" style="max-width: 310px;">
+            <div class="card-header p-1">
+                <img class="img-fluid lazy rounded-home-item-img collection-cover" src="/image/random?category=cover&id={{collection.ID}}"
+                    data-src="assets/img/vuejs.png" width="300" height="150" alt="{{collection.Name}}">
             </div>
-        </a>
-        <div class="p-3 picture-bottom">
-            <b class="picture-title">{{collection.Name}}</b>
-            <div class="picture-info mt-2 text-muted">
+            <div class="card-body p-3">
+                <h4 class="h5 mb-2"><a class="link-dark stretched-link" target="_blank"
+                        href="/archives/{{ collection.FirstDoc }}">{{collection.Name}}</a></h4>
                 <span>{{collection.CreatedAt.Format("2006年01月02日")}}</span>
-                <span></span>
             </div>
         </div>
     </div>
     {% endfor %}
-
-
 </div>
 <div class="container-fluid" style="background: #f8fafc;">
     <div class="container">
@@ -51,8 +107,4 @@
 
 {% endif %}
 
-{% endblock %}
-
-{% block footer_script %}
-<script src="/static/blog/js/photos.js"></script>
 {% endblock %}

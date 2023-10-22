@@ -45,6 +45,7 @@ func InitRouters() *gin.Engine {
 
 	routes.InitAdminRoutes(r)
 	routes.InitBlogRoutes(r)
+	routes.InitImageRoutes(r)
 
 	return r
 }
