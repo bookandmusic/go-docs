@@ -1,6 +1,8 @@
 package models
 
 import (
+	"errors"
+
 	"gorm.io/gorm"
 
 	"github.com/bookandmusic/docs/global"
@@ -20,16 +22,28 @@ func NewTag() *Tag {
 	return &Tag{}
 }
 
-func (tag *Tag) Create(name string) error {
+func (c *Tag) FindOrCreateByName(name string) (*Tag, error) {
+	obj, err := c.FindByName(name)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, err
+	}
+	if obj != nil {
+		return obj, nil
+	}
+
+	return c.Create(name)
+}
+
+func (tag *Tag) Create(name string) (*Tag, error) {
 	newTag := Tag{
 		Name:     name,
 		Identify: utils.GenerateMD5Hash(name),
 		Num:      0,
 	}
 	if err := global.GVA_DB.Create(&newTag).Error; err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+	return &newTag, nil
 }
 
 func (tag *Tag) Update(updates map[string]interface{}) error {

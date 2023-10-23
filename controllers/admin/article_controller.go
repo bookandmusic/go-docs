@@ -387,8 +387,12 @@ func (controller *ArticleController) ImportMds(c *gin.Context) {
 		}
 
 		// 创建基于会话 ID 的临时目录
+		SiteName := models.NewSetting().GetValue("site_name")
+		if SiteName == "" {
+			SiteName = "GDocs"
+		}
 		timeStr := utils.GenerateMD5Hash(time.Now().String())
-		tmpDir := path.Join(os.TempDir(), timeStr)
+		tmpDir := path.Join(os.TempDir(), SiteName, timeStr)
 		//  确保临时目录存在
 		if err := os.MkdirAll(tmpDir, os.ModePerm); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"status": false, "msg": "无法创建临时目录"})

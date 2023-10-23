@@ -107,7 +107,7 @@ func (tag *TagController) EditTag(c *gin.Context) {
 		}
 
 		if obj == nil || obj.ID == 0 {
-			if err := models.NewTag().Create(name); err != nil {
+			if _, err := models.NewTag().Create(name); err != nil {
 				global.GVA_LOG.Warn("Failed to add tag", err)
 				c.JSON(http.StatusInternalServerError, gin.H{"status": false, "msg": "编辑标签失败"})
 				return

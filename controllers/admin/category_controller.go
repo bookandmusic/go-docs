@@ -104,7 +104,7 @@ func (category *CategoryController) EditCategory(c *gin.Context) {
 			return
 		}
 		if obj == nil || obj.ID == 0 {
-			if err := models.NewCategory().Create(name); err != nil {
+			if _, err := models.NewCategory().Create(name); err != nil {
 				global.GVA_LOG.Warn("Failed to add category", err)
 				c.JSON(http.StatusInternalServerError, gin.H{"status": false, "msg": "添加分类失败"})
 				return

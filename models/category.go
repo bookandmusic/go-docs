@@ -1,6 +1,8 @@
 package models
 
 import (
+	"errors"
+
 	"gorm.io/gorm"
 
 	"github.com/bookandmusic/docs/global"
@@ -18,6 +20,18 @@ type Category struct {
 
 func NewCategory() *Category {
 	return &Category{}
+}
+
+func (c *Category) FindOrCreateByName(name string) (*Category, error) {
+	obj, err := c.FindByName(name)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, err
+	}
+	if obj != nil {
+		return obj, nil
+	}
+	return c.Create(name)
+
 }
 
 func (t *Category) Count() int {
@@ -61,16 +75,16 @@ func (c *Category) FindByIdentify(identify string) (*Category, error) {
 	return &category, nil
 }
 
-func (category *Category) Create(name string) error {
+func (category *Category) Create(name string) (*Category, error) {
 	newcategory := Category{
 		Name:     name,
 		Identify: utils.GenerateMD5Hash(name),
 		Num:      0,
 	}
 	if err := global.GVA_DB.Create(&newcategory).Error; err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+	return &newcategory, nil
 }
 
 func (category *Category) Update(updates map[string]interface{}) error {

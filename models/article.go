@@ -32,9 +32,10 @@ type ArticleTocItem struct {
 
 // FrontMatter 结构体用于解析Front Matter中的数据
 type FrontMatter struct {
-	Title      string   `yaml:"title"`
-	Tags       []string `yaml:"tags"`
-	Categories []string `yaml:"categories"`
+	Title      string    `yaml:"title"`
+	Tags       []string  `yaml:"tags"`
+	Categories []string  `yaml:"categories"`
+	Date       time.Time `yaml:"date"`
 }
 
 type ArticleItem struct {
@@ -735,13 +736,17 @@ func (a *Article) ImportMds(zipPath string, articleType ArticleTyle, collectionI
 			dir := entries[0]
 			if dir.IsDir() && dir.Name() != "." && dir.Name() != ".." {
 				tempPath = filepath.Join(tempPath, dir.Name())
-				break
 			}
+			break
 		} else {
 			break
 		}
 	}
 	currentTimeStr := time.Now().Format("20060102150405")
+
+	tagsMap := map[string]Tag{}
+	categoryMap := map[string]Category{}
+
 	err := filepath.Walk(tempPath, func(path string, info os.FileInfo, err error) error {
 		path = strings.Replace(path, "\\", "/", -1)
 		if path == tempPath {
@@ -836,6 +841,38 @@ func (a *Article) ImportMds(zipPath string, articleType ArticleTyle, collectionI
 
 				if frontMatter != nil {
 					doc.Title = frontMatter.Title
+					doc.CreatedAt = frontMatter.Date
+					for _, category := range frontMatter.Categories {
+						var (
+							categoryObj Category
+							ok          bool
+						)
+						if categoryObj, ok = categoryMap[category]; !ok {
+							if obj, _ := NewCategory().FindOrCreateByName(category); obj != nil {
+								categoryObj = *obj
+							}
+						}
+						if categoryObj.ID != 0 {
+							categoryMap[category] = categoryObj
+							doc.Category = categoryObj
+						}
+
+					}
+					for _, tag := range frontMatter.Tags {
+						var (
+							tagObj Tag
+							ok     bool
+						)
+						if tagObj, ok = tagsMap[tag]; !ok {
+							if obj, _ := NewTag().FindOrCreateByName(tag); obj != nil {
+								tagObj = *obj
+							}
+						}
+						if tagObj.ID != 0 {
+							doc.Tags = append(doc.Tags, tagObj)
+						}
+
+					}
 				} else {
 					// 解析文档名称，默认使用第一个h标签为标题
 					docName := strings.TrimSuffix(info.Name(), ext)
