@@ -28,7 +28,6 @@ func (journal *JournalController) Index(c *gin.Context) {
 }
 
 func (u *JournalController) JournalList(c *gin.Context) {
-
 	var journals []*models.Journal
 	journals, _ = models.NewJournal().FindAll()
 

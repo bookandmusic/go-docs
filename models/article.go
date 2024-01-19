@@ -309,8 +309,7 @@ func (a *Article) DeleteByArticleIds(articleIds []int) error {
 	return tx.Commit().Error
 }
 
-type ArticleScoringCriteria struct {
-}
+type ArticleScoringCriteria struct{}
 
 func (a *Article) Search(keyword string, page, size int) []*Article {
 	docs, err := a.BleveIndexSearchArticle(keyword, page, size)
@@ -475,9 +474,7 @@ func (a *Article) FindBlogs(page, size int) ([]*Article, int, error) {
 }
 
 func (a *Article) FindBlogItems() ([]*ArticleItem, error) {
-	var (
-		articles []*ArticleItem
-	)
+	var articles []*ArticleItem
 
 	query := global.GVA_DB.Table("articles").Select("`id`, `category_id`, `identify`, `title`, `order`, `parent_id`, `created_at`").Where("type = ?", Blog)
 
@@ -551,7 +548,6 @@ func (a *Article) FindArticlesByParams(params map[string]any) ([]*Article, int, 
 }
 
 func (a *Article) FindPreviousBlogAndNextBlog(currentArticleID int) (*ArticleItem, *ArticleItem) {
-
 	var previousItem ArticleItem
 	var nextItem ArticleItem
 
@@ -605,7 +601,6 @@ func (a *Article) TocList(articles []*ArticleItem) []*CollectionTocItem {
 		tocItemMap[article.ID] = &articleToc
 	}
 	for _, article := range tocItemMap {
-
 		// 如果没有父节点（ParentID 为零），直接添加到根节点的子节点中
 		if article.ParentID == 0 {
 			root.Children = append(root.Children, article)

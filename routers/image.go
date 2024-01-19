@@ -12,6 +12,5 @@ func InitImageRoutes(router *gin.Engine) {
 	imageRouter := router.Group("/image")
 	{
 		imageRouter.GET("/random", imageController.RandomImg)
-
 	}
 }

@@ -156,7 +156,6 @@ func (controller *BlogController) Post(c *gin.Context) {
 					"comment":          comment,
 				})
 			}
-
 		}
 	}
 }
@@ -263,7 +262,6 @@ func (controller *BlogController) Journals(c *gin.Context) {
 }
 
 func (controller *BlogController) Search(c *gin.Context) {
-
 	keyword := c.Query("keyword")
 	page, err := strconv.Atoi(c.Query("page"))
 	if err != nil || page < 1 {

@@ -31,7 +31,6 @@ func (c *Category) FindOrCreateByName(name string) (*Category, error) {
 		return obj, nil
 	}
 	return c.Create(name)
-
 }
 
 func (t *Category) Count() int {

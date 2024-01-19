@@ -21,9 +21,7 @@ func NewImageController() *ImageController {
 
 func (controller ImageController) RandomImg(c *gin.Context) {
 	category := c.Query("category")
-	var (
-		imageDir string
-	)
+	var imageDir string
 	switch category {
 	case "cover":
 		imageDir = path.Join(global.GVA_CONFIG.Server.WorkingDirectory, "static/image/cover")

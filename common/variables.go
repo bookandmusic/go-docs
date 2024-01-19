@@ -121,7 +121,6 @@ func GenerateArticleInfo() ArticleInfo {
 }
 
 func GeneratePersonInfo() PersonInfo {
-
 	authorName := models.NewSetting().GetValue("author_name")
 	authorAddress := models.NewSetting().GetValue("author_address")
 	authorAvatar := models.NewSetting().GetValue("author_avatar")
