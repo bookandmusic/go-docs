@@ -58,19 +58,19 @@ type CollectionTocItem struct {
 }
 
 const (
-	Blog ArticleTyle = 0
-	Doc  ArticleTyle = 1
+	Blog ArticleTyle = 1
+	Doc  ArticleTyle = 2
 )
 
 // 实现 String() 方法，根据 Category 值返回相应的字符串
 func (c ArticleTyle) String() string {
 	switch c {
 	case Blog:
-		return "博客"
+		return "blog"
 	case Doc:
-		return "文档"
+		return "doc"
 	default:
-		return "博客"
+		return "blog"
 	}
 }
 
@@ -149,18 +149,18 @@ func (a *Article) Create(article *Article) error {
 	return tx.Commit().Error
 }
 
-func (a *Article) Update(updates map[string]interface{}) error {
+func (a *Article) Update(obj *Article, updates map[string]interface{}) error {
 	// 更新字段
 	tx := global.GVA_DB.Begin()
 
 	newCollection, _ := updates["Collection"].(*Collection)
-	if a.Collection.ID != 0 && newCollection != nil && newCollection.ID != 0 {
-		if newCollection.ID != a.Collection.ID {
-			a.Collection.Num -= 1
-			if a.Collection.FirstDoc == a.Identify {
-				a.Collection.FirstDoc = ""
+	if obj.Collection.ID != 0 && newCollection != nil && newCollection.ID != 0 {
+		if newCollection.ID != obj.Collection.ID {
+			obj.Collection.Num -= 1
+			if obj.Collection.FirstDoc == obj.Identify {
+				obj.Collection.FirstDoc = ""
 			}
-			if err := tx.Model(a.Collection).Where("id = ?", a.Collection.ID).Updates(map[string]interface{}{"num": a.Collection.Num, "first_doc": a.Collection.FirstDoc}).Error; err != nil {
+			if err := tx.Model(obj.Collection).Where("id = ?", obj.Collection.ID).Updates(map[string]interface{}{"num": obj.Collection.Num, "first_doc": obj.Collection.FirstDoc}).Error; err != nil {
 				tx.Rollback()
 				return err
 			}
@@ -169,29 +169,29 @@ func (a *Article) Update(updates map[string]interface{}) error {
 				tx.Rollback()
 				return err
 			}
-			a.Collection = *newCollection
+			obj.Collection = *newCollection
 		}
-	} else if a.Collection.ID != 0 && newCollection == nil {
-		a.Collection.Num -= 1
-		if err := tx.Model(a.Collection).Where("id = ?", a.Collection.ID).Updates(map[string]interface{}{"num": a.Collection.Num}).Error; err != nil {
+	} else if obj.Collection.ID != 0 && newCollection == nil {
+		obj.Collection.Num -= 1
+		if err := tx.Model(obj.Collection).Where("id = ?", obj.Collection.ID).Updates(map[string]interface{}{"num": obj.Collection.Num}).Error; err != nil {
 			tx.Rollback()
 			return err
 		}
 		tx.Model(a).Association("Collection").Clear()
-	} else if a.Collection.ID == 0 && newCollection != nil && newCollection.ID != 0 {
+	} else if obj.Collection.ID == 0 && newCollection != nil && newCollection.ID != 0 {
 		newCollection.Num += 1
 		if err := tx.Model(newCollection).Where("id = ?", newCollection.ID).Updates(map[string]interface{}{"num": newCollection.Num}).Error; err != nil {
 			tx.Rollback()
 			return err
 		}
-		a.Collection = *newCollection
+		obj.Collection = *newCollection
 	}
 
 	newCategory, _ := updates["Category"].(*Category)
-	if a.Category.ID != 0 && newCategory != nil {
-		if newCategory.ID != a.Category.ID {
-			a.Category.Num -= 1
-			if err := tx.Model(a.Category).Where("id = ?", a.Category.ID).Updates(map[string]interface{}{"num": a.Category.Num}).Error; err != nil {
+	if obj.Category.ID != 0 && newCategory != nil {
+		if newCategory.ID != obj.Category.ID {
+			obj.Category.Num -= 1
+			if err := tx.Model(obj.Category).Where("id = ?", obj.Category.ID).Updates(map[string]interface{}{"num": obj.Category.Num}).Error; err != nil {
 				tx.Rollback()
 				return err
 			}
@@ -200,27 +200,27 @@ func (a *Article) Update(updates map[string]interface{}) error {
 				tx.Rollback()
 				return err
 			}
-			a.Category = *newCategory
+			obj.Category = *newCategory
 		}
-	} else if a.Collection.ID != 0 && newCategory == nil {
-		a.Category.Num -= 1
-		if err := tx.Model(a.Category).Where("id = ?", a.Category.ID).Updates(map[string]interface{}{"num": a.Category.Num}).Error; err != nil {
+	} else if obj.Collection.ID != 0 && newCategory == nil {
+		obj.Category.Num -= 1
+		if err := tx.Model(obj.Category).Where("id = ?", obj.Category.ID).Updates(map[string]interface{}{"num": obj.Category.Num}).Error; err != nil {
 			tx.Rollback()
 			return err
 		}
 		tx.Model(a).Association("Category").Clear()
-	} else if a.Collection.ID == 0 && newCategory != nil {
+	} else if obj.Collection.ID == 0 && newCategory != nil {
 		newCategory.Num += 1
 		if err := tx.Model(newCategory).Where("id = ?", newCategory.ID).Updates(map[string]interface{}{"num": newCategory.Num}).Error; err != nil {
 			tx.Rollback()
 			return err
 		}
-		a.Category = *newCategory
+		obj.Category = *newCategory
 	}
 
 	tagNum := make(map[uint]int)
-	if len(a.Tags) > 0 {
-		for _, tag := range a.Tags {
+	if len(obj.Tags) > 0 {
+		for _, tag := range obj.Tags {
 			tag.Num -= 1
 			if err := tx.Model(tag).Where("id = ?", tag.ID).Updates(map[string]interface{}{"num": tag.Num}).Error; err != nil {
 				tx.Rollback()
@@ -257,11 +257,11 @@ func (a *Article) Update(updates map[string]interface{}) error {
 		return err
 	}
 
-	a.BleveIndexRemoveArticle(a.Identify)
-	a.BleveIndexAddArticle(&Article{
+	obj.BleveIndexRemoveArticle(obj.Identify)
+	obj.BleveIndexAddArticle(&Article{
 		Title:    updates["title"].(string),
 		Content:  updates["content"].(string),
-		Identify: a.Identify,
+		Identify: obj.Identify,
 	})
 	return tx.Commit().Error
 }
@@ -325,7 +325,7 @@ func (a *Article) InitArticleIndex() error {
 		err      error
 	)
 	if articles, err = a.FindAll(); err != nil {
-		return errors.New(fmt.Sprintf("find all articles error: %v", err))
+		return fmt.Errorf(fmt.Sprintf("find all articles error: %v", err))
 	}
 	for _, article := range articles {
 		if err := a.BleveIndexAddArticle(article); err != nil {
@@ -490,7 +490,8 @@ func (a *Article) FindArticlesByParams(params map[string]any) ([]*Article, int, 
 		total        int64
 		page, size   int
 		keyword      string
-		articleType  int
+		sort         string
+		articleType  ArticleTyle
 		categoryID   int
 		collectionID int
 		ok           bool
@@ -504,7 +505,10 @@ func (a *Article) FindArticlesByParams(params map[string]any) ([]*Article, int, 
 	if keyword, ok = params["keyword"].(string); !ok {
 		keyword = ""
 	}
-	if articleType, ok = params["articleType"].(int); !ok {
+	if sort, ok = params["sort"].(string); !ok {
+		sort = ""
+	}
+	if articleType, ok = params["articleType"].(ArticleTyle); !ok {
 		articleType = -1
 	}
 
@@ -522,7 +526,6 @@ func (a *Article) FindArticlesByParams(params map[string]any) ([]*Article, int, 
 	if keyword != "" {
 		query = query.Where("title LIKE ?", "%"+keyword+"%")
 	}
-
 	if articleType != -1 {
 		query = query.Where("type = ?", articleType)
 	}
@@ -533,6 +536,23 @@ func (a *Article) FindArticlesByParams(params map[string]any) ([]*Article, int, 
 
 	if collectionID != -1 {
 		query = query.Where("collection_id = ?", collectionID)
+	}
+	// 处理排序参数
+	if sort != "" {
+		orderType := "DESC"
+		if sort[0] == '+' {
+			orderType = "ASC"
+			sort = sort[1:]
+		} else if sort[0] == '-' {
+			sort = sort[1:]
+		}
+
+		// 使用处理后的排序参数构建排序子句
+		orderClause := sort + " " + orderType
+		query = query.Order(orderClause)
+	} else {
+		// 默认按照id降序
+		query = query.Order("id DESC")
 	}
 
 	// 获取符合条件的总数量（不包含分页条件）

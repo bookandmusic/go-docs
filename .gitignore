@@ -1,14 +1,29 @@
-.vscode/
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+.DS_Store
 
 # Local History for Visual Studio Code
 .history/
 
-# Built Visual Studio Code Extensions
+# go
 *.vsix
 logs/*
 database/*
 uploads/*
 contrib/bin/*
 bleve.index/*
-.DS_Store
 __debug_bin*
+
+# vue
+node_modules/
+dist/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+tests/**/coverage/

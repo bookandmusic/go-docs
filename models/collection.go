@@ -28,26 +28,26 @@ func (c *Collection) Count() int {
 	return int(total)
 }
 
-func (c *Collection) Create(name, author string) error {
+func (c *Collection) Create(name, author string) (*Collection, error) {
 	newCollection := Collection{
 		Name:     name,
 		Identify: utils.GenerateMD5Hash(name),
 		Author:   author,
 	}
 	if err := global.GVA_DB.Create(&newCollection).Error; err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+	return &newCollection, nil
 }
 
-func (c *Collection) Update(updates map[string]interface{}) error {
+func (c *Collection) Update(obj *Collection, updates map[string]interface{}) error {
 	if name, ok := updates["name"].(string); ok {
 		// 如果存在，更新 identify
 		updates["identify"] = utils.GenerateMD5Hash(name)
 	}
 	// 更新字段
 	tx := global.GVA_DB.Begin()
-	if err := tx.Model(c).Updates(updates).Error; err != nil {
+	if err := tx.Model(obj).Updates(updates).Error; err != nil {
 		tx.Rollback()
 		return err
 	}
@@ -73,23 +73,37 @@ func (c *Collection) FindByName(name string) (*Collection, error) {
 	return collection, nil
 }
 
-func (collection *Collection) FindByKeyword(keyword string, contains bool, valid bool) ([]*Collection, error) {
+func (collection *Collection) FindByKeyword(keyword string, sort string, contains bool, valid bool) ([]*Collection, error) {
 	var collections []*Collection
-	query := global.GVA_DB
+	db := global.GVA_DB
 
 	if keyword != "" {
-		if contains == true {
-			query = query.Where("name LIKE ?", "%"+keyword+"%")
-		} else {
-			query = query.Where("name = ?", keyword)
+		db = db.Where("name LIKE ?", "%"+keyword+"%")
+	}
+
+	// 处理排序参数
+	if sort != "" {
+		orderType := "DESC"
+		if sort[0] == '+' {
+			orderType = "ASC"
+			sort = sort[1:]
+		} else if sort[0] == '-' {
+			sort = sort[1:]
 		}
+
+		// 使用处理后的排序参数构建排序子句
+		orderClause := sort + " " + orderType
+		db = db.Order(orderClause)
+	} else {
+		// 默认按照id降序
+		db = db.Order("id DESC")
 	}
 
 	if valid == true {
-		query = query.Where("first_doc != ''")
+		db = db.Where("first_doc != ''")
 	}
 
-	err := query.Find(&collections).Error
+	err := db.Find(&collections).Error
 	if err != nil {
 		return nil, err
 	}

@@ -22,8 +22,8 @@ func NewTag() *Tag {
 	return &Tag{}
 }
 
-func (c *Tag) FindOrCreateByName(name string) (*Tag, error) {
-	obj, err := c.FindByName(name)
+func (tag *Tag) FindOrCreateByName(name string) (*Tag, error) {
+	obj, err := tag.FindByName(name)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, err
 	}
@@ -31,7 +31,7 @@ func (c *Tag) FindOrCreateByName(name string) (*Tag, error) {
 		return obj, nil
 	}
 
-	return c.Create(name)
+	return tag.Create(name)
 }
 
 func (tag *Tag) Create(name string) (*Tag, error) {
@@ -46,14 +46,14 @@ func (tag *Tag) Create(name string) (*Tag, error) {
 	return &newTag, nil
 }
 
-func (tag *Tag) Update(updates map[string]interface{}) error {
+func (tag *Tag) Update(obj *Tag, updates map[string]interface{}) error {
 	if name, ok := updates["name"].(string); ok {
 		// 如果存在，更新 identify
 		updates["identify"] = utils.GenerateMD5Hash(name)
 	}
 	// 更新字段
 	tx := global.GVA_DB.Begin()
-	if err := tx.Model(tag).Updates(updates).Error; err != nil {
+	if err := tx.Model(obj).Updates(updates).Error; err != nil {
 		tx.Rollback()
 		return err
 	}
@@ -61,7 +61,7 @@ func (tag *Tag) Update(updates map[string]interface{}) error {
 	return tx.Commit().Error
 }
 
-func (c *Tag) DeleteByTagIds(tagIds []int) (int64, error) {
+func (tag *Tag) DeleteByTagIds(tagIds []int) (int64, error) {
 	result := global.GVA_DB.Where("id IN ?", tagIds).Unscoped().Delete(&Tag{})
 	if result.Error != nil {
 		return 0, result.Error
@@ -69,31 +69,22 @@ func (c *Tag) DeleteByTagIds(tagIds []int) (int64, error) {
 	return result.RowsAffected, nil
 }
 
-func (tag *Tag) FindAll() ([]*Tag, error) {
-	var tags []*Tag
-	err := global.GVA_DB.Find(&tags).Error
-	if err != nil {
-		return nil, err
-	}
-	return tags, nil
-}
-
-func (t *Tag) Count() int {
+func (tag *Tag) Count() int {
 	var total int64
 	global.GVA_DB.Model(&Tag{}).Count(&total)
 	return int(total)
 }
 
-func (t *Tag) FindByTagId(tagId int) (*Tag, error) {
-	var tag *Tag
-	err := global.GVA_DB.Where("id = ?", tagId).First(&tag).Error
+func (tag *Tag) FindByTagId(tagId int) (*Tag, error) {
+	var obj *Tag
+	err := global.GVA_DB.Where("id = ?", tagId).First(&obj).Error
 	if err != nil {
 		return nil, err
 	}
-	return tag, nil
+	return obj, nil
 }
 
-func (c *Tag) FindByTagIdArray(tagIds []int) ([]Tag, error) {
+func (tag *Tag) FindByTagIdArray(tagIds []int) ([]Tag, error) {
 	var tags []Tag
 	result := global.GVA_DB.Where("id IN ?", tagIds).Find(&tags)
 	if result.Error != nil {
@@ -102,27 +93,52 @@ func (c *Tag) FindByTagIdArray(tagIds []int) ([]Tag, error) {
 	return tags, nil
 }
 
-func (c *Tag) FindByName(name string) (*Tag, error) {
-	var tag Tag
-	err := global.GVA_DB.Where("name = ?", name).First(&tag).Error
+func (tag *Tag) FindByName(name string) (*Tag, error) {
+	var obj Tag
+	err := global.GVA_DB.Where("name = ?", name).First(&obj).Error
 	if err != nil {
 		return nil, err
 	}
-	return &tag, nil
+	return &obj, nil
 }
 
-func (c *Tag) FindByIdentify(identify string) (*Tag, error) {
-	var tag Tag
-	err := global.GVA_DB.Where("identify = ?", identify).First(&tag).Error
+func (tag *Tag) FindByIdentify(identify string) (*Tag, error) {
+	var obj Tag
+	err := global.GVA_DB.Where("identify = ?", identify).First(&obj).Error
 	if err != nil {
 		return nil, err
 	}
-	return &tag, nil
+	return &obj, nil
 }
 
-func (tag *Tag) FindByKeyword(keyword string) ([]*Tag, error) {
+func (tag *Tag) FindByKeyword(keyword string, sort string) ([]*Tag, error) {
 	var tags []*Tag
-	err := global.GVA_DB.Where("name LIKE ?", "%"+keyword+"%").Find(&tags).Error
+
+	db := global.GVA_DB
+
+	if keyword != "" {
+		db = db.Where("name LIKE ?", "%"+keyword+"%")
+	}
+
+	// 处理排序参数
+	if sort != "" {
+		orderType := "DESC"
+		if sort[0] == '+' {
+			orderType = "ASC"
+			sort = sort[1:]
+		} else if sort[0] == '-' {
+			sort = sort[1:]
+		}
+
+		// 使用处理后的排序参数构建排序子句
+		orderClause := sort + " " + orderType
+		db = db.Order(orderClause)
+	} else {
+		// 默认按照id降序
+		db = db.Order("id DESC")
+	}
+
+	err := db.Find(&tags).Error
 	if err != nil {
 		return nil, err
 	}
