@@ -1,0 +1,270 @@
+<script lang="ts" setup>
+import { reactive, ref, nextTick, onMounted } from "vue"
+import {
+  createCategoryDataApi,
+  deleteCategoryDataApi,
+  updateCategoryDataApi,
+  getCategoryDataApi
+} from "@/api/table/category"
+import { type GetCategoryData } from "@/api/table/types/category"
+import { type FormInstance, type FormRules, ElMessage, ElMessageBox } from "element-plus"
+import { Search, Refresh, CirclePlus, Delete, RefreshRight } from "@element-plus/icons-vue"
+
+defineOptions({
+  // 命名当前组件
+  name: "Category"
+})
+
+const loading = ref<boolean>(false)
+
+//#region 增
+const dialogVisible = ref<boolean>(false)
+const formRef = ref<FormInstance | null>(null)
+const formData = reactive({
+  name: ""
+})
+const formRules: FormRules = reactive({
+  name: [{ required: true, trigger: "blur", message: "请输入分类名" }]
+})
+const handleCreateOrUpdate = () => {
+  formRef.value?.validate((valid: boolean, fields) => {
+    if (!valid) return console.error("表单校验不通过", fields)
+    loading.value = true
+    const api = currentUpdateId.value === undefined ? createCategoryDataApi : updateCategoryDataApi
+    api({
+      id: currentUpdateId.value,
+      ...formData
+    })
+      .then(() => {
+        ElMessage.success("操作成功")
+        dialogVisible.value = false
+        getCategoryData()
+      })
+      .finally(() => {
+        loading.value = false
+      })
+  })
+}
+const resetForm = () => {
+  currentUpdateId.value = undefined
+  formRef.value?.resetFields()
+}
+//#endregion
+
+//#region 删
+const handleDelete = (row: GetCategoryData) => {
+  ElMessageBox.confirm(`正在删除分类：${row.name}，确认删除？`, "提示", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    type: "warning"
+  }).then(() => {
+    deleteCategoryDataApi(row.ID).then(() => {
+      ElMessage.success("删除成功")
+      getCategoryData()
+    })
+  })
+}
+
+const handleBatchDelete = () => {
+  if (multipleSelection.value.length === 0) {
+    // 如果 multipleSelection 是空数组，不执行删除操作
+    ElMessage({
+      message: "没有选中任何分类",
+      type: "warning"
+    })
+    return
+  }
+  ElMessageBox.confirm(`正在批量删除选中分类，确认删除？`, "提示", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    type: "warning"
+  }).then(() => {
+    // 创建一个数组来存储所有的删除请求
+    const deletePromises = multipleSelection.value.map((item) => {
+      // 返回每个删除请求的 Promise
+      return deleteCategoryDataApi(item.ID)
+    })
+
+    // 使用 Promise.all 等待所有请求完成
+    Promise.all(deletePromises).then(() => {
+      ElMessage.success("删除成功")
+      // 全部删除成功后刷新列表
+      getCategoryData()
+    })
+  })
+}
+//#endregion
+
+//#region 改
+const currentUpdateId = ref<undefined | string>(undefined)
+const handleUpdate = (row: GetCategoryData) => {
+  dialogVisible.value = true
+  // 必须延迟赋值，防止 resetFields 方法将数据重置错误
+  nextTick(() => {
+    currentUpdateId.value = row.ID
+    formData.name = row.name
+  })
+}
+//#endregion
+
+//#region 查
+const tableData = ref<GetCategoryData[]>([])
+const searchFormRef = ref<FormInstance | null>(null)
+const searchData = reactive({
+  name: "",
+  sort: ""
+})
+const sortOptions = reactive([
+  { key: "-id", alias_name: "ID DESC" },
+  { key: "+id", alias_name: "ID ASC" },
+  { key: "-num", alias_name: "Num Desc" },
+  { key: "+num", alias_name: "Num ASC" }
+])
+const getCategoryData = () => {
+  loading.value = true
+  getCategoryDataApi({
+    keyword: searchData.name || undefined,
+    sort: searchData.sort || undefined
+  })
+    .then((res) => {
+      tableData.value = res.data
+    })
+    .catch(() => {
+      tableData.value = []
+    })
+    .finally(() => {
+      loading.value = false
+    })
+}
+const handleSearch = () => {
+  getCategoryData()
+}
+const resetSearch = () => {
+  searchFormRef.value?.resetFields()
+  handleSearch()
+}
+
+const formatterDate = (row: GetCategoryData) => {
+  const originalDate = new Date(row.UpdatedAt)
+
+  // 使用 Intl.DateTimeFormat 对象创建日期格式化选项
+  const options: Intl.DateTimeFormatOptions = {
+    year: "2-digit",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false, // 使用 24 小时制
+    timeZone: "Asia/Shanghai" // 指定目标时区
+  }
+
+  // 使用 toLocaleString 方法将日期转换为字符串
+  const formattedDate = new Intl.DateTimeFormat("zh-CN", options).format(originalDate)
+
+  return formattedDate
+}
+
+//#endregion
+
+// 批量操作
+const multipleSelection = ref<GetCategoryData[]>([])
+const handleSelectionChange = (val: GetCategoryData[]) => {
+  multipleSelection.value = val
+}
+
+/** 组件初始化加载数据 */
+onMounted(() => {
+  // 在组件挂载后执行的逻辑，例如加载数据
+  getCategoryData()
+})
+</script>
+
+<template>
+  <div class="app-container">
+    <el-card v-loading="loading" shadow="never" class="search-wrapper">
+      <el-form ref="searchFormRef" :inline="true" :model="searchData">
+        <el-form-item prop="name" label="分类名">
+          <el-input v-model="searchData.name" placeholder="请输入" />
+        </el-form-item>
+        <el-form-item prop="sort" label="排序">
+          <el-select v-model="searchData.sort" placeholder="Select" style="width: 240px">
+            <el-option v-for="item in sortOptions" :key="item.key" :label="item.alias_name" :value="item.key" />
+          </el-select>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>
+          <el-button :icon="Refresh" @click="resetSearch">重置</el-button>
+        </el-form-item>
+      </el-form>
+    </el-card>
+    <el-card v-loading="loading" shadow="never">
+      <div class="toolbar-wrapper">
+        <div>
+          <el-button type="primary" :icon="CirclePlus" @click="dialogVisible = true">新增分类</el-button>
+          <el-button type="danger" :icon="Delete" @click="handleBatchDelete">批量删除</el-button>
+        </div>
+        <div>
+          <el-tooltip content="刷新当前页">
+            <el-button type="primary" :icon="RefreshRight" circle @click="getCategoryData" />
+          </el-tooltip>
+        </div>
+      </div>
+      <div class="table-wrapper">
+        <el-table :data="tableData" @selection-change="handleSelectionChange">
+          <el-table-column type="selection" width="50" align="center" />
+          <el-table-column prop="name" label="分类名" align="center" />
+          <el-table-column prop="num" label="文章数" align="center" />
+          <el-table-column prop="UpdatedAt" label="修改时间" align="center" :formatter="formatterDate" />
+          <el-table-column fixed="right" label="操作" width="150" align="center">
+            <template #default="scope">
+              <el-button type="primary" text bg size="small" @click="handleUpdate(scope.row)">修改</el-button>
+              <el-button type="danger" text bg size="small" @click="handleDelete(scope.row)">删除</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
+    </el-card>
+    <!-- 新增/修改 -->
+    <el-dialog
+      v-model="dialogVisible"
+      :title="currentUpdateId === undefined ? '新增分类' : '修改分类'"
+      @closed="resetForm"
+      width="30%"
+    >
+      <el-form ref="formRef" :model="formData" :rules="formRules" label-width="100px" label-position="left">
+        <el-form-item prop="name" label="分类名">
+          <el-input v-model="formData.name" placeholder="请输入" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="dialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="handleCreateOrUpdate" :loading="loading">确认</el-button>
+      </template>
+    </el-dialog>
+  </div>
+</template>
+
+<style lang="scss" scoped>
+.search-wrapper {
+  margin-bottom: 20px;
+  :deep(.el-card__body) {
+    padding-bottom: 2px;
+  }
+}
+
+.toolbar-wrapper {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.table-wrapper {
+  margin-bottom: 20px;
+}
+
+.pager-wrapper {
+  display: flex;
+  justify-content: flex-end;
+}
+</style>

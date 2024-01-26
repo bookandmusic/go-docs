@@ -70,7 +70,7 @@ func (controller *BlogController) Index(c *gin.Context) {
 			}
 		}
 
-		tags, _ := models.NewTag().FindAll()
+		tags, _ := models.NewTag().FindByKeyword("", "")
 
 		// 计算总页数
 		totalPages := int((total + 10 - 1) / 10)
@@ -165,7 +165,7 @@ func (controller *BlogController) Collections(c *gin.Context) {
 		site_info := common.GenerateSiteInfo()
 		title := "文集"
 
-		collections, _ := models.NewCollection().FindByKeyword("", false, true)
+		collections, _ := models.NewCollection().FindByKeyword("", "", false, true)
 
 		c.HTML(http.StatusOK, "blog/collections.html", pongo2.Context{
 			"site_info":   site_info,
@@ -208,7 +208,7 @@ func (controller *BlogController) Categories(c *gin.Context) {
 		article_info := common.GenerateArticleInfo()
 		title := "分类"
 
-		categories, _ := models.NewCategory().FindAll()
+		categories, _ := models.NewCategory().FindByKeyword("", "")
 
 		categories_map := make(map[int]models.Category)
 		for _, category := range categories {
@@ -277,7 +277,7 @@ func (controller *BlogController) Search(c *gin.Context) {
 	site_info := common.GenerateSiteInfo()
 	person_info := common.GeneratePersonInfo()
 	article_info := common.GenerateArticleInfo()
-	tags, _ := models.NewTag().FindAll()
+	tags, _ := models.NewTag().FindByKeyword("", "")
 
 	title := "搜索"
 

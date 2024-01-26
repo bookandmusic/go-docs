@@ -20,7 +20,7 @@ func InitConfig(configFile string, serverPort int) *viper.Viper {
 	v.Set("mapstructure", "true")
 	// 读取配置文件
 	if err := v.ReadInConfig(); err != nil {
-		fmt.Printf("Fatal error config file: %s \n", err)
+		fmt.Printf("fatal error config file: %s \n", err)
 	}
 	secretKey := utils.GenerateRandomKey(32)
 	v.SetDefault("server.server-port", serverPort)
@@ -42,13 +42,13 @@ func InitConfig(configFile string, serverPort int) *viper.Viper {
 
 	v.OnConfigChange(func(e fsnotify.Event) {
 		if err := v.Unmarshal(&global.GVA_CONFIG); err != nil {
-			panic(fmt.Errorf("Failed to init config: %v", err))
+			panic(fmt.Errorf("failed to init config: %v", err))
 		}
 	})
 
 	// 解析配置到 AppConfigInstance
 	if err := v.Unmarshal(&global.GVA_CONFIG); err != nil {
-		panic(fmt.Errorf("Failed to init config: %v", err))
+		panic(fmt.Errorf("failed to init config: %v", err))
 	}
 
 	global.GVA_CONFIG.Server.UploadPath = filepath.Join(global.GVA_CONFIG.Server.WorkingDirectory, "uploads")
@@ -56,7 +56,7 @@ func InitConfig(configFile string, serverPort int) *viper.Viper {
 	global.GVA_CONFIG.Log.LogFile = filepath.Join(global.GVA_CONFIG.Server.WorkingDirectory, "logs/app.log")
 
 	if err := utils.PathExists(global.GVA_CONFIG.Server.UploadPath); err != nil {
-		panic(fmt.Errorf("Fatal error create upload path: %s \n", err))
+		panic(fmt.Errorf("fatal error create upload path: %s", err))
 	}
 	return v
 }

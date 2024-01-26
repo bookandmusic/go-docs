@@ -17,7 +17,7 @@ import (
 )
 
 func InitRouters() *gin.Engine {
-	if global.GVA_CONFIG.Server.Debug == false {
+	if !global.GVA_CONFIG.Server.Debug {
 		gin.SetMode(gin.ReleaseMode)
 	}
 	r := gin.Default()
@@ -32,18 +32,22 @@ func InitRouters() *gin.Engine {
 
 	// 指定静态文件目录
 	r.Static("/static", "./static")
+	r.Static("/admin", "./admin/dist")
 	// 设置上传的资源目录，将 "uploads" 目录映射为 URL "/uploads"
 	r.StaticFS("/uploads", http.Dir(global.GVA_CONFIG.Server.UploadPath))
 
 	store := cookie.NewStore([]byte(global.GVA_CONFIG.Server.SecretKey))
 	r.Use(sessions.Sessions("docs", store))
-	r.Use(middlewares.CSRFMiddleware())
-	r.Use(middlewares.AuthMiddleware())
+	r.Use(middlewares.TokenAuthMiddleware())
 	r.Use(middlewares.GlobalRecoveryMiddleware())
 	// 使用 MinifyMiddleware 中间件
 	r.Use(middlewares.MinifyMiddleware(global.GVA_MINIFY))
+	// 动态开启cors
+	if global.GVA_CONFIG.Server.Debug {
+		r.Use(middlewares.CorsMiddleware())
+	}
 
-	routes.InitAdminRoutes(r)
+	routes.InitAPIRoutes(r)
 	routes.InitBlogRoutes(r)
 	routes.InitImageRoutes(r)
 

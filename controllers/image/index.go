@@ -9,6 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/bookandmusic/docs/common"
 	"github.com/bookandmusic/docs/global"
 	"github.com/bookandmusic/docs/utils"
 )
@@ -43,7 +44,7 @@ func (controller ImageController) RandomImg(c *gin.Context) {
 	})
 
 	if err != nil || len(imagePaths) == 0 {
-		c.JSON(http.StatusOK, gin.H{"image_paths": imagePaths})
+		c.JSON(http.StatusOK, common.SuccessMsg{Code: common.SuccessCode, Data: map[string]any{"image_paths": imagePaths}})
 		return
 	}
 	// 从图片路径中随机选择一个

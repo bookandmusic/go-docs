@@ -86,14 +86,14 @@ func (category *Category) Create(name string) (*Category, error) {
 	return &newcategory, nil
 }
 
-func (category *Category) Update(updates map[string]interface{}) error {
+func (category *Category) Update(obj *Category, updates map[string]interface{}) error {
 	// 更新字段
 	if name, ok := updates["name"].(string); ok {
 		// 如果存在，更新 identify
 		updates["identify"] = utils.GenerateMD5Hash(name)
 	}
 	tx := global.GVA_DB.Begin()
-	if err := tx.Model(category).Updates(updates).Error; err != nil {
+	if err := tx.Model(obj).Updates(updates).Error; err != nil {
 		tx.Rollback()
 		return err
 	}
@@ -101,18 +101,34 @@ func (category *Category) Update(updates map[string]interface{}) error {
 	return tx.Commit().Error
 }
 
-func (category *Category) FindAll() ([]*Category, error) {
+func (category *Category) FindByKeyword(keyword string, sort string) ([]*Category, error) {
 	var categorys []*Category
-	err := global.GVA_DB.Find(&categorys).Error
-	if err != nil {
-		return nil, err
-	}
-	return categorys, nil
-}
 
-func (category *Category) FindByKeyword(keyword string) ([]*Category, error) {
-	var categorys []*Category
-	err := global.GVA_DB.Where("name LIKE ?", "%"+keyword+"%").Find(&categorys).Error
+	db := global.GVA_DB
+
+	if keyword != "" {
+		db = db.Where("name LIKE ?", "%"+keyword+"%")
+	}
+
+	// 处理排序参数
+	if sort != "" {
+		orderType := "DESC"
+		if sort[0] == '+' {
+			orderType = "ASC"
+			sort = sort[1:]
+		} else if sort[0] == '-' {
+			sort = sort[1:]
+		}
+
+		// 使用处理后的排序参数构建排序子句
+		orderClause := sort + " " + orderType
+		db = db.Order(orderClause)
+	} else {
+		// 默认按照id降序
+		db = db.Order("id DESC")
+	}
+
+	err := db.Find(&categorys).Error
 	if err != nil {
 		return nil, err
 	}
