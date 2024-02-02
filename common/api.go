@@ -3,6 +3,8 @@ package common
 const (
 	APIPrefix = "/api/v1"
 
+	APIDashboard = "/dashboard"
+
 	APILoginUrl    = "/users/login"
 	APILogoutUrl   = "/users/logout"
 	APIUserInfoUrl = "/users/info"

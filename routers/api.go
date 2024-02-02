@@ -13,9 +13,11 @@ func InitAPIRoutes(router *gin.Engine) {
 	categoryAPIController := api.NewCategoryAPIController()
 	collectionAPIController := api.NewCollectionAPIController()
 	articleAPIController := api.NewArticleAPIController()
+	dashboardAPIController := api.NewDashboardAPIController()
 
 	apiRouter := router.Group(common.APIPrefix)
 	{
+		apiRouter.GET(common.APIDashboard, dashboardAPIController.Index)
 		apiRouter.POST(common.APILoginUrl, userAPIController.Login)
 		apiRouter.POST(common.APILogoutUrl, userAPIController.Logout)
 		apiRouter.GET(common.APIUserInfoUrl, userAPIController.UserInfo)
