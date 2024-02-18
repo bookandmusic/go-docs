@@ -177,7 +177,7 @@ func (a *Article) Update(obj *Article, updates map[string]interface{}) error {
 			tx.Rollback()
 			return err
 		}
-		tx.Model(a).Association("Collection").Clear()
+		tx.Model(obj).Association("Collection").Clear()
 	} else if obj.Collection.ID == 0 && newCollection != nil && newCollection.ID != 0 {
 		newCollection.Num += 1
 		if err := tx.Model(newCollection).Where("id = ?", newCollection.ID).Updates(map[string]interface{}{"num": newCollection.Num}).Error; err != nil {
@@ -208,7 +208,7 @@ func (a *Article) Update(obj *Article, updates map[string]interface{}) error {
 			tx.Rollback()
 			return err
 		}
-		tx.Model(a).Association("Category").Clear()
+		tx.Model(obj).Association("Category").Clear()
 	} else if obj.Collection.ID == 0 && newCategory != nil {
 		newCategory.Num += 1
 		if err := tx.Model(newCategory).Where("id = ?", newCategory.ID).Updates(map[string]interface{}{"num": newCategory.Num}).Error; err != nil {
@@ -230,7 +230,7 @@ func (a *Article) Update(obj *Article, updates map[string]interface{}) error {
 		}
 	}
 
-	tx.Model(a).Association("Tags").Clear()
+	tx.Model(obj).Association("Tags").Clear()
 
 	// 更新 Tags 字段（如果更新映射中包含 "Tags" 键）
 	var (
@@ -252,7 +252,7 @@ func (a *Article) Update(obj *Article, updates map[string]interface{}) error {
 	}
 
 	// 更新其它指定字段
-	if err := tx.Model(a).Updates(updates).Error; err != nil {
+	if err := tx.Model(obj).Updates(updates).Error; err != nil {
 		tx.Rollback()
 		return err
 	}

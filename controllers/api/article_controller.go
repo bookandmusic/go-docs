@@ -245,7 +245,7 @@ func (controller *ArticleAPIController) EditArticle(c *gin.Context) {
 		title = frontMatter.Title
 	}
 
-	if obj == nil || obj.ID == 0 {
+	if json.ID == 0 {
 		obj = &models.Article{
 			Title:       title,
 			Content:     markdownStr,
@@ -261,6 +261,11 @@ func (controller *ArticleAPIController) EditArticle(c *gin.Context) {
 			return
 		}
 	} else {
+		if obj, err = models.NewArticle().FindByArticleId(json.ID); err != nil {
+			global.GVA_LOG.Warn("Failed to find article", err)
+			c.JSON(http.StatusOK, common.ErrorMsg{Code: common.ServerErrorCode, Message: "查询文档失败"})
+			return
+		}
 		updates := map[string]interface{}{
 			"title":        title,
 			"content":      markdownStr,

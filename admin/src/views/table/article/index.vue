@@ -380,6 +380,7 @@ onMounted(() => {
       </el-form>
       <el-form
         ref="markdownRef"
+        :model="formData"
         :rules="formRules"
         label-width="100px"
         label-position="right"
