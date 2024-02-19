@@ -41,6 +41,10 @@ func (controller *CategoryAPIController) DeleteCategory(c *gin.Context) {
 	var categoryIds []int
 
 	categoryIds = append(categoryIds, categoryId)
+	if articleCount := models.NewCategory().ArticleCountByCategoryIds(categoryIds); articleCount != 0 {
+		c.JSON(http.StatusOK, common.NotEmptyError)
+		return
+	}
 
 	num, err := models.NewCategory().DeleteByCategoryIds(categoryIds)
 	if err != nil {
@@ -104,4 +108,33 @@ func (controller *CategoryAPIController) EditCategory(c *gin.Context) {
 		c.JSON(http.StatusOK, common.SuccessMsg{Code: common.SuccessCode, Data: obj})
 		return
 	}
+}
+
+func (controller *CategoryAPIController) BatchDeleteCategory(c *gin.Context) {
+	type categoryIds struct {
+		IDs []int
+	}
+
+	var json categoryIds
+	if err := c.ShouldBindJSON(&json); err != nil {
+		// 如果绑定失败，返回错误信息
+		c.JSON(http.StatusOK, common.ParamError)
+		return
+	}
+
+	if articleCount := models.NewCategory().ArticleCountByCategoryIds(json.IDs); articleCount != 0 {
+		c.JSON(http.StatusOK, common.NotEmptyError)
+		return
+	}
+
+	num, err := models.NewCategory().DeleteByCategoryIds(json.IDs)
+	if err != nil {
+		c.JSON(http.StatusOK, common.DeleteError)
+		return
+	}
+	if num == 0 {
+		c.JSON(http.StatusOK, common.NotExistsError)
+		return
+	}
+	c.JSON(http.StatusOK, common.SuccessMsg{Code: common.SuccessCode, Data: ""})
 }

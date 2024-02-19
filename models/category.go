@@ -39,6 +39,12 @@ func (t *Category) Count() int {
 	return int(total)
 }
 
+func (t *Category) ArticleCountByCategoryIds(categoryIds []int) int {
+	var total int64
+	global.GVA_DB.Model(&Article{}).Where("category_id IN ?", categoryIds).Count(&total)
+	return int(total)
+}
+
 func (c *Category) FindByCategoryId(categoryId int) (*Category, error) {
 	var category Category
 	err := global.GVA_DB.Where("id = ?", categoryId).First(&category).Error

@@ -76,4 +76,8 @@ var (
 		Code:    ServerErrorCode,
 		Message: "对象删除失败，等待后重试",
 	}
+	NotEmptyError = ErrorMsg{
+		Code:    ParamErrorCode,
+		Message: "存在关联的文章，无法删除",
+	}
 )

@@ -18,6 +18,16 @@ export function deleteCollectionDataApi(id: string) {
   })
 }
 
+export function bantchDeleteCollectionDataApi(ids: string[]) {
+  return request({
+    url: "/collections",
+    method: "delete",
+    data: {
+      ids: ids
+    }
+  })
+}
+
 /** 改 */
 export function updateCollectionDataApi(data: Collection.CreateOrUpdateCollectionRequestData) {
   return request({

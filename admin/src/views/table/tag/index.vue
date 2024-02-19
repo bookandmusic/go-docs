@@ -1,6 +1,12 @@
 <script lang="ts" setup>
 import { reactive, ref, nextTick, onMounted } from "vue"
-import { createTagDataApi, deleteTagDataApi, updateTagDataApi, getTagDataApi } from "@/api/table/tag"
+import {
+  createTagDataApi,
+  deleteTagDataApi,
+  updateTagDataApi,
+  getTagDataApi,
+  bantchDeleteTagDataApi
+} from "@/api/table/tag"
 import { type GetTagData } from "@/api/table/types/tag"
 import { type FormInstance, type FormRules, ElMessage, ElMessageBox } from "element-plus"
 import { Search, Refresh, CirclePlus, Delete, RefreshRight } from "@element-plus/icons-vue"
@@ -74,14 +80,12 @@ const handleBatchDelete = () => {
     cancelButtonText: "取消",
     type: "warning"
   }).then(() => {
-    // 创建一个数组来存储所有的删除请求
-    const deletePromises = multipleSelection.value.map((item) => {
-      // 返回每个删除请求的 Promise
-      return deleteTagDataApi(item.ID)
+    // 创建一个数组来存储所有的id
+    const ids = multipleSelection.value.map((item) => {
+      return item.ID
     })
 
-    // 使用 Promise.all 等待所有请求完成
-    Promise.all(deletePromises).then(() => {
+    bantchDeleteTagDataApi(ids).then(() => {
       ElMessage.success("删除成功")
       // 全部删除成功后刷新列表
       getTagData()

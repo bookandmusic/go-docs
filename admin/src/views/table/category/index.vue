@@ -4,7 +4,8 @@ import {
   createCategoryDataApi,
   deleteCategoryDataApi,
   updateCategoryDataApi,
-  getCategoryDataApi
+  getCategoryDataApi,
+  bantchDeleteCategoryDataApi
 } from "@/api/table/category"
 import { type GetCategoryData } from "@/api/table/types/category"
 import { type FormInstance, type FormRules, ElMessage, ElMessageBox } from "element-plus"
@@ -79,14 +80,13 @@ const handleBatchDelete = () => {
     cancelButtonText: "取消",
     type: "warning"
   }).then(() => {
-    // 创建一个数组来存储所有的删除请求
-    const deletePromises = multipleSelection.value.map((item) => {
+    // 创建一个数组来存储所有的id
+    const ids = multipleSelection.value.map((item) => {
       // 返回每个删除请求的 Promise
-      return deleteCategoryDataApi(item.ID)
+      return item.ID
     })
 
-    // 使用 Promise.all 等待所有请求完成
-    Promise.all(deletePromises).then(() => {
+    bantchDeleteCategoryDataApi(ids).then(() => {
       ElMessage.success("删除成功")
       // 全部删除成功后刷新列表
       getCategoryData()

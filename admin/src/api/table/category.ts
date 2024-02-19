@@ -18,6 +18,16 @@ export function deleteCategoryDataApi(id: string) {
   })
 }
 
+export function bantchDeleteCategoryDataApi(ids: string[]) {
+  return request({
+    url: "/categories",
+    method: "delete",
+    data: {
+      ids: ids
+    }
+  })
+}
+
 /** 改 */
 export function updateCategoryDataApi(data: Category.CreateOrUpdateCategoryRequestData) {
   return request({

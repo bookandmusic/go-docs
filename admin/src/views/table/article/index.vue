@@ -1,11 +1,12 @@
 <script lang="ts" setup>
-import { reactive, ref, nextTick, watch, onMounted } from "vue"
+import { reactive, ref, nextTick, watch } from "vue"
 import {
   createArticleDataApi,
   deleteArticleDataApi,
   updateArticleDataApi,
   getArticleDataApi,
-  getArticleDetailDataApi
+  getArticleDetailDataApi,
+  bantchDeleteArticleDataApi
 } from "@/api/table/article"
 import { CreateOrUpdateArticleRequestData, type GetArticleData } from "@/api/table/types/article"
 import { type FormInstance, type FormRules, ElMessage, ElMessageBox } from "element-plus"
@@ -159,14 +160,12 @@ const handleBatchDelete = () => {
     cancelButtonText: "取消",
     type: "warning"
   }).then(() => {
-    // 创建一个数组来存储所有的删除请求
-    const deletePromises = multipleSelection.value.map((item) => {
-      // 返回每个删除请求的 Promise
-      return deleteArticleDataApi(item.ID)
+    // 创建一个数组来存储所有的id
+    const ids = multipleSelection.value.map((item) => {
+      return item.ID
     })
 
-    // 使用 Promise.all 等待所有请求完成
-    Promise.all(deletePromises).then(() => {
+    bantchDeleteArticleDataApi(ids).then(() => {
       ElMessage.success("删除成功")
       // 全部删除成功后刷新列表
       getArticleData()
@@ -262,15 +261,17 @@ const handleSelectionChange = (val: GetArticleData[]) => {
   multipleSelection.value = val
 }
 
+// 创建一个数据监听器，监视 count 的变化
+watch(dialogVisible, (newValue) => {
+  if (newValue === true) {
+    getTagData()
+    getCollectionData()
+    getCategoryData()
+  }
+})
+
 /** 监听分页参数的变化 */
 watch([() => paginationData.currentPage, () => paginationData.pageSize], getArticleData, { immediate: true })
-/** 组件初始化加载数据 */
-onMounted(() => {
-  // 在组件挂载后执行的逻辑，例如加载数据
-  getTagData()
-  getCollectionData()
-  getCategoryData()
-})
 </script>
 
 <template>

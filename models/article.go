@@ -108,14 +108,16 @@ func NewArticle() *Article {
 
 func (a *Article) Create(article *Article) error {
 	tx := global.GVA_DB.Begin()
-	if article.CollectionID != 0 {
-		collection, err := NewCollection().FindByCollectionId(int(article.CollectionID))
-		if err != nil {
-			tx.Rollback()
-			return err
+	if article.Identify == "" {
+		article.Identify = utils.GenerateMD5Hash(time.Now().Format("20060102150405") + article.Title)
+	}
+	if article.Collection.ID != 0 {
+		collectionUpdateData := map[string]interface{}{}
+		collectionUpdateData["num"] = article.Collection.Num + 1
+		if article.Collection.FirstDoc == "" {
+			collectionUpdateData["first_doc"] = article.Identify
 		}
-		collection.Num += 1
-		if err := tx.Model(collection).Where("id = ?", collection.ID).Updates(map[string]interface{}{"num": collection.Num, "first_doc": collection.FirstDoc}).Error; err != nil {
+		if err := tx.Model(article.Collection).Where("id = ?", article.Collection.ID).Updates(collectionUpdateData).Error; err != nil {
 			tx.Rollback()
 			return err
 		}
@@ -135,9 +137,6 @@ func (a *Article) Create(article *Article) error {
 				return err
 			}
 		}
-	}
-	if article.Identify == "" {
-		article.Identify = utils.GenerateMD5Hash(time.Now().Format("20060102150405") + article.Title)
 	}
 	if err := tx.Create(article).Error; err != nil {
 		tx.Rollback()

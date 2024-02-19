@@ -43,6 +43,11 @@ func (controller *TagAPIController) DeleteTag(c *gin.Context) {
 
 	tagIds = append(tagIds, tagId)
 
+	if articleCount := models.NewTag().ArticleCountByTagIds(tagIds); articleCount != 0 {
+		c.JSON(http.StatusOK, common.NotEmptyError)
+		return
+	}
+
 	num, err := models.NewTag().DeleteByTagIds(tagIds)
 	if err != nil {
 		c.JSON(http.StatusOK, common.DeleteError)
@@ -105,4 +110,33 @@ func (controller *TagAPIController) EditTag(c *gin.Context) {
 		c.JSON(http.StatusOK, common.SuccessMsg{Code: common.SuccessCode, Data: obj})
 		return
 	}
+}
+
+func (controller *TagAPIController) BatchDeleteTag(c *gin.Context) {
+	type tagIds struct {
+		IDs []int
+	}
+
+	var json tagIds
+	if err := c.ShouldBindJSON(&json); err != nil {
+		// 如果绑定失败，返回错误信息
+		c.JSON(http.StatusOK, common.ParamError)
+		return
+	}
+
+	if articleCount := models.NewTag().ArticleCountByTagIds(json.IDs); articleCount != 0 {
+		c.JSON(http.StatusOK, common.NotEmptyError)
+		return
+	}
+
+	num, err := models.NewTag().DeleteByTagIds(json.IDs)
+	if err != nil {
+		c.JSON(http.StatusOK, common.DeleteError)
+		return
+	}
+	if num == 0 {
+		c.JSON(http.StatusOK, common.NotExistsError)
+		return
+	}
+	c.JSON(http.StatusOK, common.SuccessMsg{Code: common.SuccessCode, Data: ""})
 }

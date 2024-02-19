@@ -69,6 +69,12 @@ func (tag *Tag) DeleteByTagIds(tagIds []int) (int64, error) {
 	return result.RowsAffected, nil
 }
 
+func (tag *Tag) ArticleCountByTagIds(tagIds []int) int {
+	var total int64
+	global.GVA_DB.Table("article_tags").Where("article_tags.tag_id IN ?", tagIds).Count(&total)
+	return int(total)
+}
+
 func (tag *Tag) Count() int {
 	var total int64
 	global.GVA_DB.Model(&Tag{}).Count(&total)

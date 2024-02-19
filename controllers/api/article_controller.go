@@ -185,7 +185,7 @@ func (controller *ArticleAPIController) EditArticle(c *gin.Context) {
 			return
 		}
 	case models.Doc:
-		if json.CategoryId == 0 {
+		if json.CollectionId == 0 {
 			c.JSON(http.StatusOK, common.ErrorMsg{Code: common.ParamErrorCode, Message: "文档必须属于一个文集"})
 			return
 		}
@@ -387,5 +387,25 @@ func (controller *ArticleAPIController) ImportMds(c *gin.Context) {
 		c.JSON(http.StatusOK, common.ErrorMsg{Code: common.ServerErrorCode, Message: "文件处理失败"})
 	}
 
+	c.JSON(http.StatusOK, common.SuccessMsg{Code: common.SuccessCode, Data: ""})
+}
+
+func (controller *ArticleAPIController) BatchDeleteArticle(c *gin.Context) {
+	type articleIds struct {
+		IDs []int
+	}
+
+	var json articleIds
+	if err := c.ShouldBindJSON(&json); err != nil {
+		// 如果绑定失败，返回错误信息
+		c.JSON(http.StatusOK, common.ParamError)
+		return
+	}
+
+	err := models.NewArticle().DeleteByArticleIds(json.IDs)
+	if err != nil {
+		c.JSON(http.StatusOK, common.DeleteError)
+		return
+	}
 	c.JSON(http.StatusOK, common.SuccessMsg{Code: common.SuccessCode, Data: ""})
 }

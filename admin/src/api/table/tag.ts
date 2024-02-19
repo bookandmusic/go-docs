@@ -18,6 +18,16 @@ export function deleteTagDataApi(id: string) {
   })
 }
 
+export function bantchDeleteTagDataApi(ids: string[]) {
+  return request({
+    url: "/tags",
+    method: "delete",
+    data: {
+      ids: ids
+    }
+  })
+}
+
 /** 改 */
 export function updateTagDataApi(data: Tag.CreateOrUpdateTagRequestData) {
   return request({

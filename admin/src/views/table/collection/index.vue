@@ -4,7 +4,8 @@ import {
   createCollectionDataApi,
   deleteCollectionDataApi,
   updateCollectionDataApi,
-  getCollectionDataApi
+  getCollectionDataApi,
+  bantchDeleteCollectionDataApi
 } from "@/api/table/collection"
 import { type GetCollectionData } from "@/api/table/types/collection"
 import { type FormInstance, type FormRules, ElMessage, ElMessageBox } from "element-plus"
@@ -81,14 +82,12 @@ const handleBatchDelete = () => {
     cancelButtonText: "取消",
     type: "warning"
   }).then(() => {
-    // 创建一个数组来存储所有的删除请求
-    const deletePromises = multipleSelection.value.map((item) => {
-      // 返回每个删除请求的 Promise
-      return deleteCollectionDataApi(item.ID)
+    // 创建一个数组来存储所有的id
+    const ids = multipleSelection.value.map((item) => {
+      return item.ID
     })
 
-    // 使用 Promise.all 等待所有请求完成
-    Promise.all(deletePromises).then(() => {
+    bantchDeleteCollectionDataApi(ids).then(() => {
       ElMessage.success("删除成功")
       // 全部删除成功后刷新列表
       getCollectionData()

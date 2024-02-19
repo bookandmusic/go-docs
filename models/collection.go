@@ -22,6 +22,12 @@ func NewCollection() *Collection {
 	return &Collection{}
 }
 
+func (t *Collection) ArticleCountByCollectionIds(collectionIds []int) int {
+	var total int64
+	global.GVA_DB.Model(&Article{}).Where("collection_id IN ?", collectionIds).Count(&total)
+	return int(total)
+}
+
 func (c *Collection) Count() int {
 	var total int64
 	global.GVA_DB.Model(&Collection{}).Count(&total)

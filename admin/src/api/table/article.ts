@@ -18,6 +18,16 @@ export function deleteArticleDataApi(id: string) {
   })
 }
 
+export function bantchDeleteArticleDataApi(ids: string[]) {
+  return request({
+    url: "/articles",
+    method: "delete",
+    data: {
+      ids: ids
+    }
+  })
+}
+
 /** 改 */
 export function updateArticleDataApi(data: Article.CreateOrUpdateArticleRequestData) {
   return request({

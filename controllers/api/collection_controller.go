@@ -45,6 +45,11 @@ func (controller *CollectionAPIController) DeleteCollection(c *gin.Context) {
 
 	collectionIds = append(collectionIds, collectionId)
 
+	if articleCount := models.NewCollection().ArticleCountByCollectionIds(collectionIds); articleCount != 0 {
+		c.JSON(http.StatusOK, common.NotEmptyError)
+		return
+	}
+
 	num, err := models.NewCollection().DeleteByCollectionIds(collectionIds)
 	if err != nil {
 		c.JSON(http.StatusOK, common.DeleteError)
@@ -147,4 +152,33 @@ func (controller *CollectionAPIController) TocSorted(c *gin.Context) {
 	}
 	models.NewArticle().UpdateArticleSort(sort_data)
 
+}
+
+func (controller *CollectionAPIController) BatchDeleteCollection(c *gin.Context) {
+	type collectionIds struct {
+		IDs []int
+	}
+
+	var json collectionIds
+	if err := c.ShouldBindJSON(&json); err != nil {
+		// 如果绑定失败，返回错误信息
+		c.JSON(http.StatusOK, common.ParamError)
+		return
+	}
+
+	if articleCount := models.NewCollection().ArticleCountByCollectionIds(json.IDs); articleCount != 0 {
+		c.JSON(http.StatusOK, common.NotEmptyError)
+		return
+	}
+
+	num, err := models.NewCollection().DeleteByCollectionIds(json.IDs)
+	if err != nil {
+		c.JSON(http.StatusOK, common.DeleteError)
+		return
+	}
+	if num == 0 {
+		c.JSON(http.StatusOK, common.NotExistsError)
+		return
+	}
+	c.JSON(http.StatusOK, common.SuccessMsg{Code: common.SuccessCode, Data: ""})
 }
