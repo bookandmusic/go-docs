@@ -105,7 +105,7 @@ func (collection *Collection) FindByKeyword(keyword string, sort string, contain
 		db = db.Order("id DESC")
 	}
 
-	if valid == true {
+	if valid {
 		db = db.Where("first_doc != ''")
 	}
 

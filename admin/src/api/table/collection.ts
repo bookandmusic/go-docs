@@ -45,3 +45,18 @@ export function getCollectionDataApi(params: Collection.GetCollectionRequestData
     params
   })
 }
+
+export function getCollectionTocListDataApi(id: string) {
+  return request<Collection.GetCollectionTocListResponseData>({
+    url: `/collections/${id}/toclist`,
+    method: "get"
+  })
+}
+
+export function updateCollectionTocListDataApi(id: string, toclist: Collection.TocList) {
+  return request({
+    url: `/collections/${id}/toclist`,
+    method: "put",
+    data: toclist
+  })
+}

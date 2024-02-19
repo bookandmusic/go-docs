@@ -143,10 +143,11 @@ func (controller *BlogController) Post(c *gin.Context) {
 			} else {
 				articles, _ := obj.FindByCollectionId(int(article.CollectionID))
 				tocList := obj.TocList(articles)
+				tocListHtml := obj.TocListHtml(tocList, 0, int(article.ID))
 				previousArticle, nextArticle := article.FindPreviousDocAndNextDoc(tocList, int(article.ID))
 				c.HTML(http.StatusOK, "blog/article.html", pongo2.Context{
 					"article":          article,
-					"toc_list":         tocList,
+					"toc_list_html":    tocListHtml,
 					"site_info":        site_info,
 					"page_title":       article.Title,
 					"person_info":      person_info,

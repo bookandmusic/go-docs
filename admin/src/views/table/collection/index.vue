@@ -5,9 +5,11 @@ import {
   deleteCollectionDataApi,
   updateCollectionDataApi,
   getCollectionDataApi,
-  bantchDeleteCollectionDataApi
+  bantchDeleteCollectionDataApi,
+  getCollectionTocListDataApi,
+  updateCollectionTocListDataApi
 } from "@/api/table/collection"
-import { type GetCollectionData } from "@/api/table/types/collection"
+import { type GetCollectionData, TocList } from "@/api/table/types/collection"
 import { type FormInstance, type FormRules, ElMessage, ElMessageBox } from "element-plus"
 import { Search, Refresh, CirclePlus, Delete, RefreshRight } from "@element-plus/icons-vue"
 
@@ -49,7 +51,7 @@ const handleCreateOrUpdate = () => {
   })
 }
 const resetForm = () => {
-  currentUpdateId.value = undefined
+  currentUpdateId.value = "0"
   formRef.value?.resetFields()
 }
 //#endregion
@@ -97,7 +99,7 @@ const handleBatchDelete = () => {
 //#endregion
 
 //#region 改
-const currentUpdateId = ref<undefined | string>(undefined)
+const currentUpdateId = ref<string>("0")
 const handleUpdate = (row: GetCollectionData) => {
   dialogVisible.value = true
   // 必须延迟赋值，防止 resetFields 方法将数据重置错误
@@ -105,6 +107,55 @@ const handleUpdate = (row: GetCollectionData) => {
     currentUpdateId.value = row.ID
     formData.name = row.name
     formData.author = row.author
+  })
+}
+//#endregion
+
+//#region 文章排序
+const dialogTocListVisible = ref<boolean>(false)
+const tocList = ref<TocList>([])
+const tocProps = {
+  label: "title"
+}
+const handleTocSorted = (row: GetCollectionData) => {
+  dialogTocListVisible.value = true
+  // 必须延迟赋值，防止 resetFields 方法将数据重置错误
+  nextTick(() => {
+    currentUpdateId.value = row.ID
+    getCollectionTocListDataApi(row.ID).then((res) => {
+      tocList.value = res.data
+    })
+  })
+}
+
+const handleDrop = () => {
+  console.log("tree drop:", tocList)
+  // 更新 TocList 的 order
+  const updatedTocList = updateTocList(tocList.value, 0)
+  console.log("tree drop:", updatedTocList)
+}
+
+const updateTocList = (tocList: TocList, parentId: number) => {
+  // 遍历 tocList 数组
+  tocList.forEach((item, index) => {
+    // 更新 parentId 和 order 属性
+    item.parent_id = parentId
+    item.order = index + 1
+
+    // 如果当前项有子目录，则递归调用 updateTocList 更新子目录
+    if (item.children && item.children.length > 0) {
+      updateTocList(item.children, item.id)
+    }
+  })
+
+  return tocList
+}
+
+const handleUpdateTocSorted = () => {
+  const updatedTocList = updateTocList(tocList.value, 0)
+  updateCollectionTocListDataApi(currentUpdateId.value, updatedTocList).then(() => {
+    ElMessage.success("排序成功")
+    dialogTocListVisible.value = false
   })
 }
 //#endregion
@@ -218,9 +269,10 @@ onMounted(() => {
           <el-table-column prop="author" label="作者名" align="center" />
           <el-table-column prop="num" label="文章数" align="center" />
           <el-table-column prop="UpdatedAt" label="修改时间" align="center" :formatter="formatterDate" />
-          <el-table-column fixed="right" label="操作" width="150" align="center">
+          <el-table-column fixed="right" label="操作" width="300" align="center">
             <template #default="scope">
               <el-button type="primary" text bg size="small" @click="handleUpdate(scope.row)">修改</el-button>
+              <el-button type="primary" text bg size="small" @click="handleTocSorted(scope.row)">排序</el-button>
               <el-button type="danger" text bg size="small" @click="handleDelete(scope.row)">删除</el-button>
             </template>
           </el-table-column>
@@ -245,6 +297,14 @@ onMounted(() => {
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
         <el-button type="primary" @click="handleCreateOrUpdate" :loading="loading">确认</el-button>
+      </template>
+    </el-dialog>
+    <!-- 文章排序 -->
+    <el-dialog v-model="dialogTocListVisible" title="文章列表" width="30%">
+      <el-tree :data="tocList" draggable default-expand-all node-key="id" :props="tocProps" @node-drop="handleDrop" />
+      <template #footer>
+        <el-button @click="dialogTocListVisible = false">取消</el-button>
+        <el-button type="primary" @click="handleUpdateTocSorted" :loading="loading">确认</el-button>
       </template>
     </el-dialog>
   </div>

@@ -36,6 +36,8 @@ func InitAPIRoutes(router *gin.Engine) {
 		apiRouter.POST(common.APICollectionUrl, collectionAPIController.EditCollection)
 		apiRouter.DELETE(common.APICollectionUrl, collectionAPIController.BatchDeleteCollection)
 		apiRouter.DELETE(common.APICollectionDetailUrl, collectionAPIController.DeleteCollection)
+		apiRouter.GET(common.APICollectionTocListUrl, collectionAPIController.TocList)
+		apiRouter.PUT(common.APICollectionTocListUrl, collectionAPIController.TocSorted)
 
 		apiRouter.GET(common.APIArticleUrl, articleAPIController.ArticleList)
 		apiRouter.GET(common.APIArticleDetailUrl, articleAPIController.ArticleDetail)

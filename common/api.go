@@ -15,8 +15,9 @@ const (
 	APICategoryUrl       = "/categories"
 	APICategoryDetailUrl = "/categories/:categoryId"
 
-	APICollectionUrl       = "/collections"
-	APICollectionDetailUrl = "/collections/:collectionId"
+	APICollectionUrl        = "/collections"
+	APICollectionDetailUrl  = "/collections/:collectionId"
+	APICollectionTocListUrl = "/collections/:collectionId/toclist"
 
 	APIArticleUrl       = "/articles"
 	APIArticleDetailUrl = "/articles/:articleId"

@@ -639,6 +639,35 @@ func (a *Article) TocList(articles []*ArticleItem) []*CollectionTocItem {
 	return root.Children
 }
 
+func (a *Article) TocListHtml(tocList []*CollectionTocItem, number int, id int) string {
+	var html string
+	if number == 0 {
+		html = "<ul id=\"tocList\" class=\"list-group col nested-sortable\">"
+	} else {
+		html = "<ul class=\"list-group nested-sortable\">"
+	}
+
+	for _, article := range tocList {
+		var currentClassName string
+		if article.ID == id {
+			currentClassName = "current_article"
+		} else {
+			currentClassName = ""
+		}
+		html += fmt.Sprintf("<li data-sortable-id=\"%d\" class=\"list-group-item\">", article.ID)
+		html += fmt.Sprintf("<a style=\"color: black;\" id=\"%s\" href=\"/archives/%s\">%s</a>", currentClassName, article.Identify, article.Title)
+		if len(article.Children) > 0 {
+			html += "<i class=\"bi bi-caret-down switch-toc\"></i>"
+			html += a.TocListHtml(article.Children, number+1, id) // 递归调用
+		} else {
+			html += "<ul class=\"list-group nested-sortable\"></ul>"
+		}
+		html += "</li>"
+	}
+	html += "</ul>"
+	return html
+}
+
 func (a *Article) flattenCollectionTocItems(items []*CollectionTocItem) []*CollectionTocItem {
 	flatItems := []*CollectionTocItem{}
 

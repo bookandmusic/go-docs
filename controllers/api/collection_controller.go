@@ -118,7 +118,7 @@ func (controller *CollectionAPIController) EditCollection(c *gin.Context) {
 
 func (controller *CollectionAPIController) TocList(c *gin.Context) {
 	// 从路由中获取整数参数
-	collectionIDStr := c.Query("collection_id")
+	collectionIDStr := c.Param("collectionId")
 
 	// 将字符串形式的 collectionID 转换为整数
 	collectionID, err := strconv.Atoi(collectionIDStr)

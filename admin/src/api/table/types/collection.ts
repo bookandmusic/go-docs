@@ -18,4 +18,17 @@ export interface GetCollectionData {
   num: number
 }
 
+export interface TocItem {
+  id: number
+  identify: string
+  title: string
+  order: number
+  parent_id?: number
+  children?: TocItem[]
+}
+
+export type TocList = TocItem[]
+
 export type GetCollectionResponseData = ApiResponseData<GetCollectionData[]>
+
+export type GetCollectionTocListResponseData = ApiResponseData<TocList>
