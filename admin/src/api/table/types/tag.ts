@@ -1,5 +1,5 @@
 export interface CreateOrUpdateTagRequestData {
-  id?: string
+  id?: number
   name: string
 }
 
@@ -11,7 +11,7 @@ export interface GetTagRequestData {
 
 export interface GetTagData {
   UpdatedAt: string
-  ID: string
+  ID: number
   name: string
   num: number
 }

@@ -92,7 +92,7 @@ func (controller *TagAPIController) EditTag(c *gin.Context) {
 	if obj == nil || obj.ID == 0 {
 		obj, err := models.NewTag().Create(name)
 		if err != nil {
-			global.GVA_LOG.Warn("Failed to add tag", err)
+			global.GVA_LOG.Warn("Failed to add tag: ", err)
 			c.JSON(http.StatusOK, common.CreateError)
 			return
 		}
@@ -103,7 +103,7 @@ func (controller *TagAPIController) EditTag(c *gin.Context) {
 			"name": name,
 		}
 		if err := models.NewTag().Update(obj, updates); err != nil {
-			global.GVA_LOG.Warn("Failed to edit tag", err)
+			global.GVA_LOG.Warn("Failed to edit tag: ", err)
 			c.JSON(http.StatusOK, common.UpdateError)
 			return
 		}

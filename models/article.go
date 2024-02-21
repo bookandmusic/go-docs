@@ -299,6 +299,11 @@ func (a *Article) DeleteByArticleIds(articleIds []int) error {
 				}
 			}
 		}
+		if err := tx.Model(&article).Association("Tags").Clear(); err != nil {
+			tx.Rollback()
+			return err
+		}
+
 		tx.Model(article).Where("id = ?", articleId).Unscoped().Delete(&Article{})
 		if err := a.BleveIndexRemoveArticle(article.Identify); err != nil {
 			global.GVA_LOG.Error(fmt.Sprintf("remove bleve index error by article %s : %v", article.Title, err))
@@ -743,7 +748,7 @@ func (a *Article) UpdateArticleSort(tocList []*CollectionTocItem) {
 	}
 }
 
-func (a *Article) ImportMds(zipPath string, articleType ArticleTyle, collectionID, categoryID int) error {
+func (a *Article) ImportMds(zipPath string, articleType ArticleTyle, collection *Collection, category *Category) error {
 	// 判断是否存在
 	if !utils.FileExists(zipPath) {
 		return errors.New("文件不存在 => " + zipPath)
@@ -807,8 +812,8 @@ func (a *Article) ImportMds(zipPath string, articleType ArticleTyle, collectionI
 
 				global.GVA_LOG.Info("正在处理 =>", path, info.Name())
 				doc := NewArticle()
-				doc.CollectionID = uint(collectionID)
-				doc.CategoryID = uint(categoryID)
+				doc.Collection = *collection
+				doc.Category = *category
 				docIdentify := strings.Replace(strings.TrimPrefix(path, tempPath+"/"), "/", "-", -1)
 				doc.Identify = utils.GenerateMD5Hash(currentTimeStr + docIdentify)
 				// 匹配图片，如果图片语法是在代码块中，这里同样会处理
@@ -899,7 +904,7 @@ func (a *Article) ImportMds(zipPath string, articleType ArticleTyle, collectionI
 							categoryMap[category] = categoryObj
 							doc.Category = categoryObj
 						}
-
+						break
 					}
 					for _, tag := range frontMatter.Tags {
 						var (
@@ -975,8 +980,8 @@ func (a *Article) ImportMds(zipPath string, articleType ArticleTyle, collectionI
 
 				parentDoc.Identify = identify
 				parentDoc.Title = "空白文档"
-				parentDoc.CollectionID = uint(collectionID)
-				parentDoc.CategoryID = uint(categoryID)
+				parentDoc.Collection = *collection
+				parentDoc.Category = *category
 				parentDoc.Type = articleType
 
 				parentId := 0

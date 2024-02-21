@@ -90,7 +90,7 @@ func (controller *CategoryAPIController) EditCategory(c *gin.Context) {
 	if obj == nil || obj.ID == 0 {
 		obj, err := models.NewCategory().Create(name)
 		if err != nil {
-			global.GVA_LOG.Warn("Failed to add category", err)
+			global.GVA_LOG.Warn("Failed to add category: ", err)
 			c.JSON(http.StatusOK, common.CreateError)
 			return
 		}
@@ -101,7 +101,7 @@ func (controller *CategoryAPIController) EditCategory(c *gin.Context) {
 			"name": name,
 		}
 		if err := models.NewCategory().Update(obj, updates); err != nil {
-			global.GVA_LOG.Warn("Failed to edit category", err)
+			global.GVA_LOG.Warn("Failed to edit category: ", err)
 			c.JSON(http.StatusOK, common.UpdateError)
 			return
 		}

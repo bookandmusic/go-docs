@@ -256,13 +256,13 @@ func (controller *ArticleAPIController) EditArticle(c *gin.Context) {
 			Tags:        tags,
 		}
 		if err := models.NewArticle().Create(obj); err != nil {
-			global.GVA_LOG.Warn("Failed to add article", err)
+			global.GVA_LOG.Warn("Failed to add article: ", err)
 			c.JSON(http.StatusOK, common.ErrorMsg{Code: common.ServerErrorCode, Message: "添加文档失败"})
 			return
 		}
 	} else {
 		if obj, err = models.NewArticle().FindByArticleId(json.ID); err != nil {
-			global.GVA_LOG.Warn("Failed to find article", err)
+			global.GVA_LOG.Warn("Failed to find article: ", err)
 			c.JSON(http.StatusOK, common.ErrorMsg{Code: common.ServerErrorCode, Message: "查询文档失败"})
 			return
 		}
@@ -305,25 +305,26 @@ func (controller *ArticleAPIController) ImportMds(c *gin.Context) {
 
 	// 获取文集 ID
 	collectionIdStr := c.PostForm("collectionId")
-	articleTypeStr := c.PostForm("articleType")
+	articleTypeStr := c.PostForm("type")
 	categoryIdStr := c.PostForm("categoryId")
 	var (
 		collectionID, categoryID int
 		articleType              models.ArticleTyle
-		category                 *models.Category
-		collection               *models.Collection
+		category                 *models.Category   = models.NewCategory()
+		collection               *models.Collection = models.NewCollection()
 		err                      error
 	)
 	articleType = models.Blog.Parse(articleTypeStr)
 
-	if articleTypeStr == "" {
-		articleTypeStr = "blog"
+	if articleType == models.Blog && categoryIdStr == "" {
+		c.JSON(http.StatusOK, common.ErrorMsg{Code: common.ParamErrorCode, Message: "博客必须属于一个分类"})
+		return
 	}
-	if articleType == models.Blog {
-		if categoryIdStr == "" {
-			c.JSON(http.StatusOK, common.ErrorMsg{Code: common.ParamErrorCode, Message: "博客必须属于一个分类"})
-			return
-		}
+	if articleType == models.Doc && collectionIdStr == "" {
+		c.JSON(http.StatusOK, common.ErrorMsg{Code: common.ParamErrorCode, Message: "文档必须属于一个文集"})
+		return
+	}
+	if categoryIdStr != "" {
 		if categoryID, err = strconv.Atoi(categoryIdStr); err != nil {
 			c.JSON(http.StatusOK, common.ParamError)
 			return
@@ -333,11 +334,9 @@ func (controller *ArticleAPIController) ImportMds(c *gin.Context) {
 			c.JSON(http.StatusOK, common.ParamError)
 			return
 		}
-	} else {
-		if collectionIdStr == "" {
-			c.JSON(http.StatusOK, common.ErrorMsg{Code: common.ParamErrorCode, Message: "文档必须属于一个文集"})
-			return
-		}
+	}
+
+	if articleType == models.Doc && collectionIdStr != "" {
 		if collectionID, err = strconv.Atoi(collectionIdStr); err != nil {
 			c.JSON(http.StatusOK, common.ParamError)
 			return
@@ -382,8 +381,8 @@ func (controller *ArticleAPIController) ImportMds(c *gin.Context) {
 	}
 
 	// 导入zip项目
-	if err := models.NewArticle().ImportMds(filePath, articleType, collectionID, categoryID); err != nil {
-		global.GVA_LOG.Error("upload markdown zip error", err)
+	if err := models.NewArticle().ImportMds(filePath, articleType, collection, category); err != nil {
+		global.GVA_LOG.Error("upload markdown zip error: ", err)
 		c.JSON(http.StatusOK, common.ErrorMsg{Code: common.ServerErrorCode, Message: "文件处理失败"})
 	}
 

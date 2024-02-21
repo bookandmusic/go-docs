@@ -11,14 +11,14 @@ export function createTagDataApi(data: Tag.CreateOrUpdateTagRequestData) {
 }
 
 /** 删 */
-export function deleteTagDataApi(id: string) {
+export function deleteTagDataApi(id: number) {
   return request({
     url: `/tags/${id}`,
     method: "delete"
   })
 }
 
-export function bantchDeleteTagDataApi(ids: string[]) {
+export function bantchDeleteTagDataApi(ids: number[]) {
   return request({
     url: "/tags",
     method: "delete",

@@ -1,5 +1,5 @@
 export interface CreateOrUpdateCollectionRequestData {
-  id?: string
+  id?: number
   name: string
   author: string
 }
@@ -12,7 +12,7 @@ export interface GetCollectionRequestData {
 
 export interface GetCollectionData {
   UpdatedAt: string
-  ID: string
+  ID: number
   name: string
   author: string
   num: number

@@ -72,6 +72,7 @@ func (controller *CollectionAPIController) EditCollection(c *gin.Context) {
 	if err := c.ShouldBindJSON(&json); err != nil {
 		// 如果绑定失败，返回错误信息
 		c.JSON(http.StatusOK, common.ParamError)
+		global.GVA_LOG.Warn(fmt.Sprintf("解析参数错误: %v", err))
 		return
 	}
 	name := json.Name
@@ -95,7 +96,7 @@ func (controller *CollectionAPIController) EditCollection(c *gin.Context) {
 	if obj == nil || obj.ID == 0 {
 		obj, err := models.NewCollection().Create(name, author)
 		if err != nil {
-			global.GVA_LOG.Warn("Failed to add collection", err)
+			global.GVA_LOG.Warn("Failed to add collection: ", err)
 			c.JSON(http.StatusOK, common.CreateError)
 			return
 		}
@@ -107,7 +108,7 @@ func (controller *CollectionAPIController) EditCollection(c *gin.Context) {
 			"author": author,
 		}
 		if err := models.NewCollection().Update(obj, updates); err != nil {
-			global.GVA_LOG.Warn("Failed to edit collection", err)
+			global.GVA_LOG.Warn("Failed to edit collection: ", err)
 			c.JSON(http.StatusOK, common.UpdateError)
 			return
 		}

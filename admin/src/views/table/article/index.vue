@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { reactive, ref, nextTick, watch } from "vue"
+import { reactive, ref, nextTick, watch, Ref } from "vue"
 import {
   createArticleDataApi,
   deleteArticleDataApi,
@@ -8,8 +8,10 @@ import {
   getArticleDetailDataApi,
   bantchDeleteArticleDataApi
 } from "@/api/table/article"
+import { getToken } from "@/utils/cache/cookies"
 import { CreateOrUpdateArticleRequestData, type GetArticleData } from "@/api/table/types/article"
 import { type FormInstance, type FormRules, ElMessage, ElMessageBox } from "element-plus"
+import type { UploadInstance } from "element-plus"
 import { Search, Refresh, CirclePlus, Delete, RefreshRight } from "@element-plus/icons-vue"
 import { usePagination } from "@/hooks/usePagination"
 import { GetCollectionData } from "@/api/table/types/collection"
@@ -72,7 +74,7 @@ const getTagData = () => {
     })
 }
 
-const getArticleDetailData = (id: string) => {
+const getArticleDetailData = (id: number) => {
   loading.value = true
   getArticleDetailDataApi(id)
     .then((res) => {
@@ -86,6 +88,71 @@ const getArticleDetailData = (id: string) => {
     .finally(() => {
       loading.value = false
     })
+}
+
+// 导入文档
+const dialogImportVisible = ref<boolean>(false)
+const dialogImportFullscreen = ref<boolean>(false)
+const importFormRef = ref<FormInstance | null>(null)
+const importData: Ref<{ [key: string]: any }> = ref({
+  type: "",
+  categoryId: undefined,
+  collectionId: undefined
+})
+const uploadData: Ref<{ [key: string]: any }> = ref({})
+const resetImportForm = () => {
+  importFormRef.value?.resetFields()
+  upload.value!.clearFiles()
+}
+const importFormRules: FormRules = reactive({
+  // type: [{ required: true, trigger: "blur", message: "请选择类别" }]
+})
+const importUrl = `/api/v1/articles/import`
+const token = getToken()
+const headers = {
+  // 携带 Token
+  Authorization: token ? `${token}` : undefined
+}
+
+const upload = ref<UploadInstance>()
+
+const handleBeforeUpload = () => {
+  if (importData.value.type !== "doc" && importData.value.type !== "blog") {
+    ElMessage.error("请选择文章所属类别")
+    return false
+  }
+  if (importData.value.type === "blog") {
+    if (importData.value.categoryId === 0 || importData.value.categoryId === undefined) {
+      ElMessage.error("请选择文章所属分类")
+      return false
+    }
+  }
+  if (importData.value.type === "doc") {
+    if (importData.value.categoryId === 0 || importData.value.collectionId === undefined) {
+      ElMessage.error("请选择文章所属文集")
+      return false
+    }
+  }
+  uploadData.value["type"] = importData.value.type
+  if (importData.value.collectionId !== undefined && importData.value.collectionId != 0) {
+    uploadData.value["collectionId"] = importData.value.collectionId
+  }
+  if (importData.value.categoryId !== undefined && importData.value.categoryId != 0) {
+    uploadData.value["categoryId"] = importData.value.categoryId
+  }
+}
+const handleUploadSuccess = (response: any) => {
+  console.log(response)
+  if (response.code !== 0) {
+    const msg = response.message
+    ElMessage.error(msg)
+  } else {
+    ElMessage.success("上传成功")
+  }
+}
+const handleUploadError = (error: Error) => {
+  console.log(error)
+  ElMessage.error("上传失败")
 }
 
 //#region 增
@@ -175,7 +242,7 @@ const handleBatchDelete = () => {
 //#endregion
 
 //#region 改
-const currentUpdateId = ref<undefined | string>(undefined)
+const currentUpdateId = ref<undefined | number>(undefined)
 const handleUpdate = (row: GetArticleData) => {
   dialogVisible.value = true
   // 必须延迟赋值，防止 resetFields 方法将数据重置错误
@@ -270,6 +337,15 @@ watch(dialogVisible, (newValue) => {
   }
 })
 
+// 创建一个数据监听器，监视 count 的变化
+watch(dialogImportVisible, (newValue) => {
+  if (newValue === true) {
+    getTagData()
+    getCollectionData()
+    getCategoryData()
+  }
+})
+
 /** 监听分页参数的变化 */
 watch([() => paginationData.currentPage, () => paginationData.pageSize], getArticleData, { immediate: true })
 </script>
@@ -301,6 +377,7 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getArti
       <div class="toolbar-wrapper">
         <div>
           <el-button type="primary" :icon="CirclePlus" @click="dialogVisible = true">新增文章</el-button>
+          <el-button type="primary" :icon="CirclePlus" @click="dialogImportVisible = true">批量导入</el-button>
           <el-button type="danger" :icon="Delete" @click="handleBatchDelete">批量删除</el-button>
         </div>
         <div>
@@ -397,6 +474,62 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getArti
         <el-button type="primary" @click="handleCreateOrUpdate" :loading="loading">确认</el-button>
       </template>
     </el-dialog>
+    <!-- 导入文档 -->
+    <el-dialog
+      v-model="dialogImportVisible"
+      title="导入文章"
+      @closed="resetImportForm"
+      :fullscreen="dialogImportFullscreen"
+    >
+      <el-form
+        :inline="true"
+        ref="importFormRef"
+        :model="importData"
+        :rules="importFormRules"
+        label-width="100px"
+        label-position="right"
+        class="inline-form"
+        style="width: 90%"
+      >
+        <el-form-item prop="type" label="类别">
+          <el-select v-model="importData.type" placeholder="类别">
+            <el-option v-for="item in typeOptions" :key="item.key" :label="item.alias_name" :value="item.key" />
+          </el-select>
+        </el-form-item>
+        <el-form-item prop="categoryId" label="分类">
+          <el-select v-model="importData.categoryId" placeholder="分类">
+            <el-option v-for="item in categoryData" :key="item.ID" :label="item.name" :value="item.ID" />
+          </el-select>
+        </el-form-item>
+        <el-form-item prop="collectionId" label="文集">
+          <el-select v-model="importData.collectionId" placeholder="文集">
+            <el-option v-for="item in collectionData" :key="item.ID" :label="item.name" :value="item.ID" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="压缩包">
+          <el-upload
+            ref="upload"
+            drag
+            id="upload-zip"
+            :action="importUrl"
+            :headers="headers"
+            :data="uploadData"
+            :before-upload="handleBeforeUpload"
+            :on-success="handleUploadSuccess"
+            :on-error="handleUploadError"
+          >
+            <el-icon class="el-icon--upload"><upload-filled /></el-icon>
+            <div class="el-upload__text">Drop file here or <em>click to upload</em></div>
+            <template #tip>
+              <div class="el-upload__tip">请上传zip压缩包</div>
+            </template>
+          </el-upload>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="dialogImportVisible = false">取消</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -432,5 +565,8 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getArti
 }
 .markdown-editor {
   width: 100%;
+}
+#upload-zip {
+  width: 480px;
 }
 </style>

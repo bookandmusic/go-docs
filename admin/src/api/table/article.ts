@@ -11,14 +11,14 @@ export function createArticleDataApi(data: Article.CreateOrUpdateArticleRequestD
 }
 
 /** 删 */
-export function deleteArticleDataApi(id: string) {
+export function deleteArticleDataApi(id: number) {
   return request({
     url: `/articles/${id}`,
     method: "delete"
   })
 }
 
-export function bantchDeleteArticleDataApi(ids: string[]) {
+export function bantchDeleteArticleDataApi(ids: number[]) {
   return request({
     url: "/articles",
     method: "delete",
@@ -47,7 +47,7 @@ export function getArticleDataApi(params: Article.GetArticleRequestData) {
 }
 
 /** 查 */
-export function getArticleDetailDataApi(id: string) {
+export function getArticleDetailDataApi(id: number) {
   return request<Article.GetArticleDetailResponseData>({
     url: `/articles/${id}`,
     method: "get"

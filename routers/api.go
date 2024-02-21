@@ -44,6 +44,6 @@ func InitAPIRoutes(router *gin.Engine) {
 		apiRouter.POST(common.APIArticleUrl, articleAPIController.EditArticle)
 		apiRouter.DELETE(common.APIArticleUrl, articleAPIController.BatchDeleteArticle)
 		apiRouter.DELETE(common.APIArticleDetailUrl, articleAPIController.DeleteArticle)
-		apiRouter.DELETE(common.APIArticImportleUrl, articleAPIController.ImportMds)
+		apiRouter.POST(common.APIArticImportleUrl, articleAPIController.ImportMds)
 	}
 }

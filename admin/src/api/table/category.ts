@@ -11,14 +11,14 @@ export function createCategoryDataApi(data: Category.CreateOrUpdateCategoryReque
 }
 
 /** 删 */
-export function deleteCategoryDataApi(id: string) {
+export function deleteCategoryDataApi(id: number) {
   return request({
     url: `/categories/${id}`,
     method: "delete"
   })
 }
 
-export function bantchDeleteCategoryDataApi(ids: string[]) {
+export function bantchDeleteCategoryDataApi(ids: number[]) {
   return request({
     url: "/categories",
     method: "delete",

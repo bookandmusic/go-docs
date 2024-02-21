@@ -1,5 +1,5 @@
 export interface CreateOrUpdateCategoryRequestData {
-  id?: string
+  id?: number
   name: string
 }
 
@@ -11,7 +11,7 @@ export interface GetCategoryRequestData {
 
 export interface GetCategoryData {
   UpdatedAt: string
-  ID: string
+  ID: number
   name: string
   num: number
 }

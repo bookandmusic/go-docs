@@ -11,14 +11,14 @@ export function createCollectionDataApi(data: Collection.CreateOrUpdateCollectio
 }
 
 /** 删 */
-export function deleteCollectionDataApi(id: string) {
+export function deleteCollectionDataApi(id: number) {
   return request({
     url: `/collections/${id}`,
     method: "delete"
   })
 }
 
-export function bantchDeleteCollectionDataApi(ids: string[]) {
+export function bantchDeleteCollectionDataApi(ids: number[]) {
   return request({
     url: "/collections",
     method: "delete",
@@ -46,14 +46,14 @@ export function getCollectionDataApi(params: Collection.GetCollectionRequestData
   })
 }
 
-export function getCollectionTocListDataApi(id: string) {
+export function getCollectionTocListDataApi(id: number) {
   return request<Collection.GetCollectionTocListResponseData>({
     url: `/collections/${id}/toclist`,
     method: "get"
   })
 }
 
-export function updateCollectionTocListDataApi(id: string, toclist: Collection.TocList) {
+export function updateCollectionTocListDataApi(id: number, toclist: Collection.TocList) {
   return request({
     url: `/collections/${id}/toclist`,
     method: "put",

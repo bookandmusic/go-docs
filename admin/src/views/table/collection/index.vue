@@ -51,7 +51,7 @@ const handleCreateOrUpdate = () => {
   })
 }
 const resetForm = () => {
-  currentUpdateId.value = "0"
+  currentUpdateId.value = 0
   formRef.value?.resetFields()
 }
 //#endregion
@@ -99,7 +99,7 @@ const handleBatchDelete = () => {
 //#endregion
 
 //#region 改
-const currentUpdateId = ref<string>("0")
+const currentUpdateId = ref<number>(0)
 const handleUpdate = (row: GetCollectionData) => {
   dialogVisible.value = true
   // 必须延迟赋值，防止 resetFields 方法将数据重置错误

@@ -1,5 +1,5 @@
 export interface CreateOrUpdateArticleRequestData {
-  id?: string
+  id?: number
   title: string
   content: string
   type: string
@@ -17,7 +17,7 @@ export interface GetArticleRequestData {
 
 export interface GetArticleData {
   UpdatedAt: string
-  ID: string
+  ID: number
   categoryId: number
   categoryName: string
   collectionId: number

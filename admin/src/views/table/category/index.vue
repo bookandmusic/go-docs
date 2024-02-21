@@ -96,7 +96,7 @@ const handleBatchDelete = () => {
 //#endregion
 
 //#region 改
-const currentUpdateId = ref<undefined | string>(undefined)
+const currentUpdateId = ref<undefined | number>(undefined)
 const handleUpdate = (row: GetCategoryData) => {
   dialogVisible.value = true
   // 必须延迟赋值，防止 resetFields 方法将数据重置错误
